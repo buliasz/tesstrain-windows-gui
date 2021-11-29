@@ -1,0 +1,161 @@
+﻿; (C) Copyright 2021, Bartlomiej Uliasz
+; Licensed under the Apache License, Version 2.0 (the "License");
+; you may not use this file except in compliance with the License.
+; You may obtain a copy of the License at
+; http://www.apache.org/licenses/LICENSE-2.0
+; Unless required by applicable law or agreed to in writing, software
+; distributed under the License is distributed on an "AS IS" BASIS,
+; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+; See the License for the specific language governing permissions and
+; limitations under the License.
+
+; Backend functions for GUI
+
+StartTrainingCb(buttonCtrl, *) {
+	global StatusUpdate
+
+	errors := ""
+	for (key, value in WRONG_INPUT_MAP) {
+		errors .= " • " value "`n"
+	}
+	if (errors) {
+		MsgBox("Please fix first following errors:`n" errors,, "Iconx")
+		return
+	}
+
+	outputDataExists := FileExist(OUTPUT_DIR "\unicharset")
+
+	if (outputDataExists) {
+		if (YesNoConfirmation("The 'Output model directory' already contains data. Do you want me to clean 'Output model' directory? Otherwise .traineddata will be generated from the existing checkpoint file.")) {
+			DeleteModelData()
+			outputDataExists := false
+		}
+	}
+
+	if (!outputDataExists) {
+		VerifyGtTxtFiles(buttonCtrl.Gui)
+	}
+
+	if (AUTO_SAVE) {
+		SaveSettings()
+	}
+
+	StatusUpdate := ProgressStatusGui
+	StatusUpdate("Training startup", buttonCtrl.Gui)
+	StartTraining()
+
+	UpdateModelFileInTessdata()
+
+	StatusUpdate()	; closes status and re-enables main Gui
+
+	MsgBox "Training complete"
+
+	return
+
+	; Returns false if there is no model to use.
+	UpdateModelFileInTessdata() {
+		tessdataModelFile := TESSDATA "\" MODEL_NAME ".traineddata"
+		generatedModelFile := DATA_DIR "\" MODEL_NAME ".traineddata"
+		shouldCopy := false
+		if (!FileExist(generatedModelFile)) {
+			MsgBox("There is no newly generated model of name " MODEL_NAME " inside the " DATA_DIR " folder. Probably training didn't finish.")
+			return false
+		}
+		if (!FileExist(tessdataModelFile)) {
+			shouldCopy := YesNoConfirmation("Your new model doesn't exist in your 'tessdata' folder. Do you want me to copy it so that you will be able to use it for testing?")
+			if (!shouldCopy) {
+				return false
+			}
+		} else if (IsFileOlder(tessdataModelFile, generatedModelFile)) {
+			shouldCopy := YesNoConfirmation("Do you want me to update existing '" MODEL_NAME "' model in your 'tessdata' folder so that you will be able to use the new one for recognition?")
+		}
+
+		if (shouldCopy) {
+			FileCopy(generatedModelFile, tessdataModelFile, true)
+		}
+		return true
+	}
+}
+
+SaveSettings(*) {
+	global
+	for varableName in CONFIGURATION_VARIABLES_LIST {
+		IniWrite(%varableName%, CONFIGURATION_FILE, "General", varableName)
+	}
+	MsgBox("Settings saved")
+}
+
+LoadSettings(*) {
+	global
+	for varableName in CONFIGURATION_VARIABLES_LIST {
+		%varableName% := IniRead(CONFIGURATION_FILE, "General", varableName, %varableName%)
+	}
+}
+
+GetStartModelList() {
+	nameList := FindAllFiles(TESSDATA "\*.traineddata")
+	nameList := ArrayTransform(nameList, StrCutEnd, StrLen(".traineddata"))
+	nameList := ArrayTransform(nameList, StrRCutTo, "\")
+	nameList.InsertAt(1, "")
+	return nameList
+}
+
+CleanModelData(*) {
+	if (YesNoConfirmation("This action will permanently delete following files:`n"
+		. (DELETE_MODEL_DIRECTORY ? "and all the content of the directory: " OUTPUT_DIR "`n" : "")
+		. (DELETE_BOX_FILES ? GROUND_TRUTH_DIR "\*.box`n" : "")
+		. (DELETE_LSTMF_FILES ? GROUND_TRUTH_DIR "\*.lstmf`n" : "")
+		. "`nAre you sure?")
+	) {
+		if (DELETE_MODEL_DIRECTORY) {
+			DeleteModelData()
+		}
+		if (DELETE_BOX_FILES) {
+			DeleteBoxFiles()
+		}
+		if (DELETE_LSTMF_FILES) {
+			DeleteLstmfFiles()
+		}
+	}
+}
+
+RemoveImageExtension(imagePath) {
+	for fileExtension in SUPPORTED_IMAGE_FILES {
+		if (StrEndsWith(imagePath, fileExtension)) {
+			return StrCutEnd(imagePath, StrLen(fileExtension))
+		}
+	}
+	return ""
+}
+
+GenerateTrainedData(*) {
+	if (FindAllFiles(OUTPUT_DIR "\checkpoints\" MODEL_NAME "*checkpoint").Length == 0) {
+		MsgBox "There are no checkpoint files yet for your selected model name. Please run 'Start Training' first and then you will be able to use generated checkpoint files."
+		return
+	}
+
+	if (!CREATE_BEST_TRAINEDDATA && !CREATE_FAST_TRAINEDDATA) {
+		MsgBox "Please choose at least one of best and/or fast version option"
+		return
+	}
+
+	checkpointFileList := FileSelect(
+		"M3",
+		OUTPUT_DIR "\checkpoints\",
+		"Please select file(s) from which you want to to create 'traineddata'.",
+		MODEL_NAME "*checkpoint")
+	if (checkpointFileList.Length == 0) {
+		return
+	}
+	if (CREATE_BEST_TRAINEDDATA) {
+		MultipleCheckpointToTraineddata(checkpointFileList, false)
+	}
+	if (CREATE_FAST_TRAINEDDATA) {
+		MultipleCheckpointToTraineddata(checkpointFileList, true)
+	}
+	MsgBox("'.traineddata' file" (checkpointFileList.Length > 1 ? "s" : "") " generated")
+}
+
+ExitGui(*) {
+	ExitApp
+}

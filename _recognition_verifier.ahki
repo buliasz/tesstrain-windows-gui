@@ -1,0 +1,106 @@
+﻿; (C) Copyright 2021, Bartlomiej Uliasz
+; Licensed under the Apache License, Version 2.0 (the "License");
+; you may not use this file except in compliance with the License.
+; You may obtain a copy of the License at
+; http://www.apache.org/licenses/LICENSE-2.0
+; Unless required by applicable law or agreed to in writing, software
+; distributed under the License is distributed on an "AS IS" BASIS,
+; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+; See the License for the specific language governing permissions and
+; limitations under the License.
+
+; Allows preview recognition after training is done
+
+VerifyRecognition(btnCtrl, *) {
+	col1Width := 200
+	col2Width := 600
+
+	if (!UpdateModelFileInTessdata()) {
+		return
+	}
+
+	imageGui := Gui("+Resize -DPIScale +Owner" btnCtrl.Gui.Hwnd, "Trained Image")
+	imageList := []
+	for fileExtension in SUPPORTED_IMAGE_FILES {
+		ArrayPushAll(FindAllFiles(GROUND_TRUTH_DIR "\*" fileExtension), imageList)
+	}
+
+	imageGui.Add("Text", "section xm w" col1Width, "Processed image:")
+	pathCtrl := imageGui.Add("Text", "ys w" col2Width " vImagePath", " ")
+
+	imageGui.Add("Text", "section xm w" col1Width, "Value from .gt.txt file:")
+	gtTxtCtrl := imageGui.Add("Text", "ys w" col2Width " vGtTxtValue", " ")
+
+	imageGui.Add("Text", "section xm w" col1Width, "Recongized value:")
+	ocrResultCtrl := imageGui.Add("Text", "ys w" col2Width " vOcrResult h30", " ")
+	ocrResultCtrl.SetFont("cBlue s15 w666")
+
+	skipBtn := imageGui.Add("Button", "xm section default", "&Next")
+	skipBtn.OnEvent("Click", ShowNextImage)
+	exitBtn := imageGui.Add("Button", "ys", "&Close")
+	exitBtn.OnEvent("Click", CloseCb)
+	picCtrl := imageGui.Add("Pic", "xm")
+
+	imageGui.Title := "Image tests"
+	imageGui.Show("xCenter AutoSize")  ; Resize the window to match the picture size.
+	imageGui.OnEvent("Close", CloseCb)
+	imageGui.OnEvent("Escape", CloseCb)
+	btnCtrl.Gui.Opt("+Disabled")
+
+	ShowNextImage()
+	WinWaitClose(imageGui)
+
+	return
+
+	ShowNextImage(*) {
+		if (imageList.Length == 0) {
+			MsgBoxAot("No more files")
+			; btnCtrl.Gui.Opt("-Disabled")
+			WinClose(imageGui)
+			return
+		}
+		imageFullPath := imageList.Pop()
+		pathCtrl.Text := imageFullPath
+		ocrResultCtrl.Text := "..."
+		gtTxtPath := RemoveImageExtension(imageFullPath) ".gt.txt"
+		if (FileExist(gtTxtPath)) {
+			gtTxtCtrl.Text := FileGetFirstLine(gtTxtPath)
+		} else {
+			gtTxtCtrl.Text := "<none>"
+		}
+		picCtrl.Value := "*w" (col1Width + col2Width) " *h-1 " imageFullPath  ; Load the image.
+
+		imageGui.Show("xCenter AutoSize")  ; Resize the window to match the picture size.
+
+		recognizedValue := OcrImageFile(imageFullPath, START_MODEL)
+		ocrResultCtrl.Text := recognizedValue
+	}
+
+	CloseCb(*) {
+		btnCtrl.Gui.Opt("-Disabled")
+		imageGui.Destroy()
+	}
+
+	UpdateModelFileInTessdata() {
+		tessdataModelFile := TESSDATA "\" MODEL_NAME ".traineddata"
+		generatedModelFile := DATA_DIR "\" MODEL_NAME ".traineddata"
+		shouldCopy := false
+		if (!FileExist(generatedModelFile)) {
+			MsgBox("There is no newly generated model of name " MODEL_NAME " inside the " DATA_DIR " folder. Please execute training first.")
+			return false
+		}
+		if (!FileExist(tessdataModelFile)) {
+			shouldCopy := YesNoConfirmation("Your new model doesn't exist in your 'tessdata' folder. Do you want me to copy it so that you will be able to use it for testing?")
+			if (!shouldCopy) {
+				return false
+			}
+		} else if (IsFileOlder(tessdataModelFile, generatedModelFile)) {
+			shouldCopy := YesNoConfirmation("Your new model is newer than the one existing in your 'tessdata' folder. Do you want me to update it so that you will be able to use it for testing?")
+		}
+
+		if (shouldCopy) {
+			FileCopy(generatedModelFile, tessdataModelFile, true)
+		}
+		return true
+	}
+}
