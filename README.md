@@ -1,6 +1,6 @@
 # Tesstrain GUI for Windows
 
-> Training workflow GUI for Tesseract 4 as a Windows GUI executable and AutoHotKey script file.
+> Training workflow GUI version 1.1 for Tesseract 4 as a Windows GUI executable and AutoHotKey script file.
 
 ## Install
 
@@ -10,22 +10,24 @@ The GUI is a portable executable. You can copy `tesstrain_gui.exe` file to any d
 
 You will need a recent version (>= 4.0.0beta1) of tesseract built with the
 training tools and matching leptonica bindings.
-[Build](https://tesseract-ocr.github.io/tessdoc/Compiling.html#windows) and [install
-instructions](https://tesseract-ocr.github.io/tessdoc/Compiling-%E2%80%93-GitInstallation)
-and more can be found in the [Tesseract User
-Manual](https://tesseract-ocr.github.io/tessdoc/).
 
-You can download executables built from the latest code version using the [zdenop's 
-AppVeyor](https://ci.appveyor.com/project/zdenop/tesseract/build/artifacts). You will need 
-though to copy 'traineddata' files from any other source (for example from the [official Tesseract
-website](https://tesseract-ocr.github.io/tessdoc/#traineddata-files-1)). 
+You can download executables built from the latest code version using the [zdenop's
+AppVeyor](https://ci.appveyor.com/project/zdenop/tesseract/build/artifacts). You will also need
+a copy of some 'traineddata' files which you can find for example on the [official Tesseract
+website](https://tesseract-ocr.github.io/tessdoc/#traineddata-files-1)).
+
+If you prefer, you can also [build](https://tesseract-ocr.github.io/tessdoc/Compiling.html#windows) and [install
+instructions](https://tesseract-ocr.github.io/tessdoc/Compiling-%E2%80%93-GitInstallation)
+binaries on your own. More information can be found in the [Tesseract User
+Manual](https://tesseract-ocr.github.io/tessdoc/).
 
 ### Python
 
 You need a recent version of Python 3.x. For image processing the Python library `Pillow` is used.
-If you don't have a global installation, the GUI will try to install `Pillow` and other required Python modules.
-'python3' command must be working from the project's directory (Python's executable folder should be in your PATH 
-environment variable).
+If you don't have a global installation, the GUI will try to install `Pillow` and other required Python modules on
+the first run.
+'python' or 'python3' command must be working from the project's directory (Python's executable folder should be
+in your PATH environment variable).
 
 ### Language data
 
@@ -53,7 +55,7 @@ Images must be in `.tif`, `.png`, `.bin.png`, `.nrm.png` or `.bmp` format.
 
 Transcriptions must be single-line plain text and have the same name as the
 line image but with the image extension replaced by `.gt.txt`. If any supported
-image file won't have corresponding `.gt.txt` file, you will be asked for content on the 
+image file won't have corresponding `.gt.txt` file, you will be asked for content on the
 start of training, and it will be saved in a proper file.
 
 The repository contains a folder with sample ground truth, see
