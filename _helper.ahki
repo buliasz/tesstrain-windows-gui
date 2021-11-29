@@ -170,6 +170,7 @@ GetFileLine(filePath, lineNumber) {
 }
 
 ; Removes path leaving only file name with extension
+; Alternatively 'SplitPath' AHK command may be used
 FileGetName(filePathWithName) {
 	return StrRCutTo(filePathWithName, "\")
 }
@@ -244,16 +245,32 @@ VerifyRequirements() {
 }
 
 VerifyPythonDependencies() {
-	ProgressStatusGui("Verifying Python dependencies")
+	ProgressStatusGui("Verifying/installing required Python modules")
 	try {
-		ver := ExecuteCommand("python3 --version")
-	} catch Error as e {
-		MsgBox("Executing 'python3' returned error. Please make sure that you have a Python 3.x installed and that python3 executable's directory is in your PATH environment variable.")
+		version := ExecuteCommand("python --version")
+		PYTHON_EXE := "python"
+	} catch Error as ePython {
+		try {
+			version := ExecuteCommand("python3 --version")
+			PYTHON_EXE := "python3"
+		} catch Error as ePython3 {
+			MsgBox("Executing 'python' command returned error: " ePython.Message "`n`n"
+				. "Executing 'python3' command returned error: " ePython3.Message "`n`n"
+				. "Please make sure that you have a Python 3.x installed and that "
+				. "'python.exe' or 'python3.exe' executable file directory is in your PATH environment variable.")
+			ExitApp()
+		}
+	}
+
+	versionStr := StrRCutTo(Trim(version.StdOut, "`t`n`r "), " ")
+	versionArray := StrSplit(versionStr, ".")
+	if (versionArray.Length < 1 || !IsInteger(versionArray[1]) || versionArray[1] < 3) {
+		MsgBox("Wrong Python version. Returned version: '" versionStr "'. Please install Python version 3 or above.")
 		ExitApp()
 	}
 	
 	try {
-		ExecuteCommand("python3 -m pip install Pillow>=6.2.1 python-bidi>=0.4 matplotlib pandas")
+		ExecuteCommand(PYTHON_EXE " -m pip install Pillow>=6.2.1 python-bidi>=0.4 matplotlib pandas")
 	} catch Error as e {
 		MsgBox(e.Message)
 		ExitApp()

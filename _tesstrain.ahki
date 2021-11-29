@@ -16,6 +16,7 @@
 SUPPORTED_IMAGE_FILES := [".bin.png", ".nrm.png", ".png", ".tif", ".bmp"]
 
 DEBUG_MODE := false
+PYTHON_EXE := "python"
 
 BIN_DIR := "C:\Program Files\Tesseract-OCR_4.1.1"
 BINARIES := Map(
@@ -279,7 +280,7 @@ GenerateAllLstmfFiles() {
 
 	FileSave(OUTPUT_DIR "\all-lstmf", ArrayJoin(lstmfFilesList, "`n") "`n")
 
-	ExecuteCommand("python3 shuffle.py " RANDOM_SEED " < `"" OUTPUT_DIR "\all-lstmf`" > `"" OUTPUT_DIR "\all-lstmf.shuffled`"", 2)
+	ExecuteCommand(PYTHON_EXE " shuffle.py " RANDOM_SEED " < `"" OUTPUT_DIR "\all-lstmf`" > `"" OUTPUT_DIR "\all-lstmf.shuffled`"", 2)
 	lstmfList := GetNonEmptyLines(OUTPUT_DIR "\all-lstmf.shuffled")
 
 	return lstmfList
@@ -309,7 +310,7 @@ GenerateLstmfFile(name) {
 
 GenerateBoxFileFromImage(fullImagePathWithoutExtension, imageExtension) {
 	if (!FileExist(fullImagePathWithoutExtension ".box")) {
-		ExecuteCommand("set PYTHONIOENCODING=utf-8 && python3 " GENERATE_BOX_SCRIPT " -i `"" fullImagePathWithoutExtension imageExtension "`" -t `"" fullImagePathWithoutExtension ".gt.txt`" > `"" fullImagePathWithoutExtension ".box`"", 2)
+		ExecuteCommand("set PYTHONIOENCODING=utf-8 && " PYTHON_EXE " " GENERATE_BOX_SCRIPT " -i `"" fullImagePathWithoutExtension imageExtension "`" -t `"" fullImagePathWithoutExtension ".gt.txt`" > `"" fullImagePathWithoutExtension ".box`"", 2)
 	}
 }
 
