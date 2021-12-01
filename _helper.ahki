@@ -245,7 +245,7 @@ VerifyRequirements() {
 }
 
 VerifyPythonDependencies() {
-	ProgressStatusGui("Verifying/installing required Python modules")
+	ProgressStatusGui("Verifying installed Python version")
 	try {
 		version := ExecuteCommand("python --version")
 		PYTHON_EXE := "python"
@@ -269,11 +269,19 @@ VerifyPythonDependencies() {
 		ExitApp()
 	}
 	
+	ProgressStatusGui("Verifying/installing required Python modules")
+
 	try {
 		ExecuteCommand(PYTHON_EXE " -m pip install Pillow>=6.2.1 python-bidi>=0.4 matplotlib pandas")
 	} catch Error as e {
-		MsgBox(e.Message)
-		ExitApp()
+		if (YesNoConfirmation("Could not install required Python modules. Probably you don't have required privilages.`n"
+			. "Do you want me to try again as Administrator?")) {
+			ExecuteCommand(PYTHON_EXE " -m pip install Pillow>=6.2.1 python-bidi>=0.4 matplotlib pandas",, true)
+			ExecuteCommand()
+		} else {
+			MsgBox("Error installing required Python modules.`n" e.Message)
+			ExitApp()
+		}
 	}
 }
 
@@ -288,7 +296,7 @@ MsgBoxAot(message) {
 OnError MyErrorFunction
 MyErrorFunction(_exception, _mode) {
     MsgBox(DescribeException(_exception) "`nMode: " _mode)
-    return 1
+    ExitApp	; It's an unhandled exception. We want to Shutdown the app.
 	
 	DescribeException(e) {
 		extra := e.HasProp("Extra") ? e.Extra : ""

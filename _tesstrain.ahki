@@ -247,15 +247,13 @@ GenerateTrainAndEvalLists() {
 	total := allLstmf.Length
 
 	train := Floor(total * RATIO_TRAIN)
-	if (total < 1) {
-		MsgBox("Error: Not enough Ground Truth for training. Found " total " '.gt.txt' files with train/eval ratio " RATIO_TRAIN ".")
-		ExitApp 1
+	if (train < 1) {
+		throw Error("Error: Not enough Ground Truth for training. Found " total " '.gt.txt' files with train/eval ratio " RATIO_TRAIN ".")
 	}
 
 	eval := total - train
 	if (eval < 1) {
-		MsgBox("Error: Not enough Ground Truth for evaluation. Found " total " '.gt.txt' files with train/eval ratio " RATIO_TRAIN ".")
-		ExitApp 1
+		throw Error("Error: Not enough Ground Truth for evaluation. Found " total " '.gt.txt' files with train/eval ratio " RATIO_TRAIN ".")
 	}
 
 	StatusUpdate("Creating 'list.train' and 'list.eval' of .lstmf files")
@@ -309,8 +307,9 @@ GenerateLstmfFile(name) {
 }
 
 GenerateBoxFileFromImage(fullImagePathWithoutExtension, imageExtension) {
-	if (!FileExist(fullImagePathWithoutExtension ".box")) {
-		ExecuteCommand("set PYTHONIOENCODING=utf-8 && " PYTHON_EXE " " GENERATE_BOX_SCRIPT " -i `"" fullImagePathWithoutExtension imageExtension "`" -t `"" fullImagePathWithoutExtension ".gt.txt`" > `"" fullImagePathWithoutExtension ".box`"", 2)
+	boxFileFullPath := fullImagePathWithoutExtension ".box"
+	if (!FileExist(boxFileFullPath) || FileGetSize(boxFileFullPath) == 0) {
+		ExecuteCommand("set PYTHONIOENCODING=utf-8 && " PYTHON_EXE " " GENERATE_BOX_SCRIPT " -i `"" fullImagePathWithoutExtension imageExtension "`" -t `"" fullImagePathWithoutExtension ".gt.txt`" > `"" boxFileFullPath "`"", 2)
 	}
 }
 

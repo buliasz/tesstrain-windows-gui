@@ -21,7 +21,7 @@
 ; 3 - Visible 'cmd' execution. It is the slowest one, but the only that allows 
 ;     user to view console's live output and eventually input manually if
 ;     needed.
-ExecuteCommand(command:="", mode:=1) {
+ExecuteCommand(command:="", mode:=1, admin:=false) {
 	global DEBUG_MODE
 	static hCon:="", cPid:=""
 	
@@ -39,10 +39,13 @@ ExecuteCommand(command:="", mode:=1) {
 			command .= " & pause"
 		}
 		FreeConsole()
-		RunWait(command)
+		RunWait((admin ? "*RunAs " : "") command)
 		return
 	}
 	
+	if (admin) {	; Need to reattach console as administrator
+		FreeConsole()
+	}
 	AttachConsole()
 	
 	objShell := ComObject("WScript.Shell")
@@ -57,6 +60,9 @@ ExecuteCommand(command:="", mode:=1) {
 	}
 	while (!objExec.StdOut.AtEndOfStream) {
 		stdOut .= objExec.StdOut.ReadAll()
+	}
+	if (admin) {	; Free console to prevent running next commands as Administrator
+		FreeConsole()
 	}
 
 	; MsgBox A_ThisFunc ":" A_LineNumber ": PID=" objExec.ProcessID " Status=" objExec.Status " ExitCode=" objExec.ExitCode " LE=" A_LastError
@@ -89,7 +95,11 @@ ExecuteCommand(command:="", mode:=1) {
 		}
 
 		DetectHiddenWindows True
-		Run(A_ComSpec " /k",, "Hide", &cPid)
+		if (admin) {
+			Run("*RunAs " A_ComSpec " /k",, "Hide", &cPid)
+		} else {
+			Run(A_ComSpec " /k",, "Hide", &cPid)
+		}
 		WinWait("ahk_pid " cPid,, 10)
 		DllCall("AttachConsole", "UInt", cPid)
 		hCon := DllCall("CreateFile", 

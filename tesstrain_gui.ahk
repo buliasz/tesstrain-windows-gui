@@ -115,14 +115,14 @@ TesstrainGui() {
 		AddFileSelection(
 			"Last checkpoint file",
 			"LAST_CHECKPOINT",
-			"During the training Tesseract creates checkpoint files. If the file already exists it will be used to generate .traineddata from it. Checkpoint files are saved within 'checkpoints' subfolder of the selected output model directory.`n`n"
+			"During the training Tesseract creates checkpoint files. If the file already exists it will be used to generate .traineddata from it. Checkpoint files are saved within 'checkpoints' subfolder of the selected 'Training files output directory'.`n`n"
 				. "You can use 'Generate' button to generate .traineddata from any existing .checkpoint file.",,
 			false
 		)
 		AddFileSelection(
 			"Proto model file",
 			"PROTO_MODEL",
-			"Name of the proto model. It's an automatically generated file for starter traineddata with combined Dawgs/Unicharset/Recoder for language model. Usually it is '<YOUR MODEL NAME>.traineddata' file within output model directory.`n`n"
+			"Name of the proto model. It's an automatically generated file for starter traineddata with combined Dawgs/Unicharset/Recoder for language model. Usually it is '<YOUR MODEL NAME>.traineddata' file within 'Training files output directory'.`n`n"
 				. "Note that if you want to fine tune some existing model (for example English 'eng' model) you should use the 'Start model' option for that purpose.",,
 			false
 		)
@@ -251,8 +251,8 @@ TesstrainGui() {
 				"'.box' files", "DELETE_BOX_FILES",
 				"'.lstmf' files", "DELETE_LSTMF_FILES",
 			),
-			"For currently selected model name deletes all the Output Model directory content and/or all '.box' / '.lstmf' files inside the Ground Truth directory.`n"
-				. "Usually you need only to remove Output Model directory if you have a new input files to process. You can choose previously generated traineddata file as a `Start model`.",
+			"For currently selected model name deletes all the 'Training files output directory' content and/or all '.box' / '.lstmf' files inside the Ground Truth directory.`n"
+				. "Usually you need only to remove 'Training files output directory' if you have a new input files to process. You can choose previously generated traineddata file as a `Start model`.",
 		)
 
 		AddButton(
@@ -270,7 +270,7 @@ TesstrainGui() {
 				"best", "CREATE_BEST_TRAINEDDATA",
 				"fast", "CREATE_FAST_TRAINEDDATA",
 			),
-			"Allows you to generate 'best' and/or 'fast' traineddata from any checkpoint file created during training process (including the final one). The default .traineddata file generated during the training process located inside your selected 'Output model directory' is the 'best' version for the final checkpoint. Checkpoint file names include Character Error Rate (CER), which is the first part after model name. The best ones are with the lowest CER rate."
+			"Allows you to generate 'best' and/or 'fast' traineddata from any checkpoint file created during training process (including the final one). The default .traineddata file generated during the training process located inside your selected 'Training files output directory' is the 'best' version for the final checkpoint. Checkpoint file names include Character Error Rate (CER), which is the first part after model name. The best ones are with the lowest CER rate."
 		)
 
 		; Main buttons
