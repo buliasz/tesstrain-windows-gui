@@ -14,6 +14,8 @@
 StartTrainingCb(buttonCtrl, *) {
 	global StatusUpdate
 
+	buttonCtrl.Gui.Opt("+OwnDialogs")  ; Force the user to dismiss any created here dialogs before interacting with the main window.
+
 	errors := ""
 	for (key, value in WRONG_INPUT_MAP) {
 		errors .= " • " value "`n"
@@ -82,6 +84,9 @@ StartTrainingCb(buttonCtrl, *) {
 
 SaveSettings(*) {
 	global
+
+	mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss any created here dialogs before interacting with the main window.
+
 	for varableName in CONFIGURATION_VARIABLES_LIST {
 		IniWrite(%varableName%, CONFIGURATION_FILE, "General", varableName)
 	}
@@ -132,6 +137,10 @@ RemoveImageExtension(imagePath) {
 }
 
 GenerateTrainedData(*) {
+	global mainGui
+
+	mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss any created here dialogs before interacting with the main window.
+
 	if (FindAllFiles(OUTPUT_DIR "\checkpoints\" MODEL_NAME "*checkpoint").Length == 0) {
 		MsgBox "There are no checkpoint files yet for your selected model name. Please run 'Start Training' first and then you will be able to use generated checkpoint files."
 		return

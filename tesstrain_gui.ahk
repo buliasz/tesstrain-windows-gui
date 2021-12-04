@@ -38,10 +38,10 @@ REQUIREMENTS_VERIFIED := false
 TesstrainGui()
 
 TesstrainGui() {
-	global BIN_DIR, DATA_DIR, TESSDATA, GROUND_TRUTH_DIR, DEBUG_MODE, MODEL_NAME, OUTPUT_DIR, WORDLIST_FILE, NUMBERS_FILE, PUNC_FILE, START_MODEL, LAST_CHECKPOINT, PROTO_MODEL, MAX_ITERATIONS, DEBUG_INTERVAL, LEARNING_RATE, NET_SPEC, LANG_TYPE, NORM_MODE, PASS_THROUGH_RECORDER, LANG_IS_RTL, GENERATE_BOX_SCRIPT, PSM, RANDOM_SEED, RATIO_TRAIN, TARGET_ERROR_RATE, BINARIES, CREATE_BEST_TRAINEDDATA, CREATE_FAST_TRAINEDDATA, REQUIREMENTS_VERIFIED
+	global mainGui, BIN_DIR, DATA_DIR, TESSDATA, GROUND_TRUTH_DIR, DEBUG_MODE, MODEL_NAME, OUTPUT_DIR, WORDLIST_FILE, NUMBERS_FILE, PUNC_FILE, START_MODEL, LAST_CHECKPOINT, PROTO_MODEL, MAX_ITERATIONS, DEBUG_INTERVAL, LEARNING_RATE, NET_SPEC, LANG_TYPE, NORM_MODE, PASS_THROUGH_RECORDER, LANG_IS_RTL, GENERATE_BOX_SCRIPT, PSM, RANDOM_SEED, RATIO_TRAIN, TARGET_ERROR_RATE, BINARIES, CREATE_BEST_TRAINEDDATA, CREATE_FAST_TRAINEDDATA, REQUIREMENTS_VERIFIED
 
 	static firstColumnWidth:=225, secondColumnWidth:=370, rowHeight:=19
-	MyGui := ""
+	mainGui := ""
 
 	LoadSettings()
 	if (!REQUIREMENTS_VERIFIED) {
@@ -52,7 +52,7 @@ TesstrainGui() {
 	CreateGui()
 
 	CreateGui()	{
-		MyGui := Gui(, "Tesstrain GUI")
+		mainGui := Gui("+OwnDialogs", "Tesstrain GUI")
 
 		AddCheckbox(
 			"Debug mode",
@@ -274,31 +274,31 @@ TesstrainGui() {
 		)
 
 		; Main buttons
-		startBtn := MyGui.Add("Button", "default xs section +center", "&Start Training")
+		startBtn := mainGui.Add("Button", "default xs section +center", "&Start Training")
 		startBtn.OnEvent("Click", StartTrainingCb)
-		exitBtn := MyGui.Add("Button", "ys x+10 checked", "&Exit")
+		exitBtn := mainGui.Add("Button", "ys x+10 checked", "&Exit")
 		exitBtn.OnEvent("Click", ExitGui)
-		resetBtn := MyGui.Add("Button", "ys x+10 checked", "&Reload")
-		resetBtn.OnEvent("Click", (*)=>(MyGui.Destroy(), TesstrainGui()))
-		saveBtn := MyGui.Add("Button", "ys x+10 checked", "Sa&ve settings")
+		resetBtn := mainGui.Add("Button", "ys x+10 checked", "&Reload")
+		resetBtn.OnEvent("Click", (*)=>(mainGui.Destroy(), TesstrainGui()))
+		saveBtn := mainGui.Add("Button", "ys x+10 checked", "Sa&ve settings")
 		saveBtn.OnEvent("Click", SaveSettings)
-		autosaveChb := MyGui.Add("Checkbox", "ys hp 0x20 Checked" AUTO_SAVE " vAUTO_SAVE", "Save automatically on 'Start Training'")
+		autosaveChb := mainGui.Add("Checkbox", "ys hp 0x20 Checked" AUTO_SAVE " vAUTO_SAVE", "Save automatically on 'Start Training'")
 		autosaveChb.OnEvent("Click", SetCtrlNameGlobalToCtrlValue)
 
 		OnBinDirChange(BIN_DIR, false)
 		OnTessdataDirChange(TESSDATA, false)
 		OnGroundTruthDirChange(GROUND_TRUTH_DIR, false)
 		OnLanguateTypeChange()
-		MyGui.Show()
+		mainGui.Show()
 	}
 
 	; Controls closures for automated creation
 
 	AddFolderSelection(title, targetVariableName, description, OnChange:="", isShowChangeButton:=true) {
-		MyGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
-		guiCtrl := MyGui.Add("Edit", "ys hp ReadOnly w" secondColumnWidth " v" targetVariableName, %targetVariableName%)
+		mainGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
+		guiCtrl := mainGui.Add("Edit", "ys hp ReadOnly w" secondColumnWidth " v" targetVariableName, %targetVariableName%)
 		if (isShowChangeButton) {
-			binSelectBtn := MyGui.Add("Button", "ys hp", "Change")
+			binSelectBtn := mainGui.Add("Button", "ys hp", "Change")
 			binSelectBtn.OnEvent("Click", FolderSelectCb)
 		}
 		AddDescription(description, title)
@@ -316,10 +316,10 @@ TesstrainGui() {
 	}
 
 	AddFileSelection(title, targetVariableName, description, OnChange:="", isShowChangeButton:=true) {
-		MyGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
-		guiCtrl := MyGui.Add("Edit", "ys hp ReadOnly w" secondColumnWidth " v" targetVariableName, %targetVariableName%)
+		mainGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
+		guiCtrl := mainGui.Add("Edit", "ys hp ReadOnly w" secondColumnWidth " v" targetVariableName, %targetVariableName%)
 		if (isShowChangeButton) {
-			binSelectBtn := MyGui.Add("Button", "ys hp", "Change")
+			binSelectBtn := mainGui.Add("Button", "ys hp", "Change")
 			binSelectBtn.OnEvent("Click", FileSelectCb)
 		}
 		AddDescription(description, title)
@@ -337,19 +337,19 @@ TesstrainGui() {
 	}
 
 	AddCheckbox(title, targetVariableName, description) {
-		chb := MyGui.Add("Checkbox", "section xm 0x20 w" firstColumnWidth + 23 " h" rowHeight " Checked" %targetVariableName% " v" targetVariableName, title)
+		chb := mainGui.Add("Checkbox", "section xm 0x20 w" firstColumnWidth + 23 " h" rowHeight " Checked" %targetVariableName% " v" targetVariableName, title)
 		chb.OnEvent("Click", SetCtrlNameGlobalToCtrlValue)
 		AddDescription(description, title)
 	}
 
 	AddButtonWithCheckboxes(title, buttonText, ButtonCallback, checkboxTextToVariableMap, description) {
-		MyGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title)
+		mainGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title)
 
-		btn := MyGui.Add("Button", "ys hp", buttonText)
+		btn := mainGui.Add("Button", "ys hp", buttonText)
 		btn.OnEvent("Click", ButtonCallback)
 
 		for (chbTxt, chbVar in checkboxTextToVariableMap) {
-			chb := MyGui.Add("Checkbox", "ys hp Checked" %chbVar% " v" chbVar, chbTxt)
+			chb := mainGui.Add("Checkbox", "ys hp Checked" %chbVar% " v" chbVar, chbTxt)
 			chb.OnEvent("Click", SetCtrlNameGlobalToCtrlValue)
 		}
 
@@ -357,8 +357,8 @@ TesstrainGui() {
 	}
 
 	AddEditBox(title, targetVariableName, description, defaultValue:="", OnChangeCallback:="") {
-		MyGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
-		guiCtrl := MyGui.Add("Edit", "ys hp w" secondColumnWidth " v" targetVariableName, %targetVariableName%)
+		mainGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
+		guiCtrl := mainGui.Add("Edit", "ys hp w" secondColumnWidth " v" targetVariableName, %targetVariableName%)
 		guiCtrl.OnEvent("Change", SetCtrlNameGlobalToCtrlValue)
 		if (OnChangeCallback) {
 			guiCtrl.OnEvent("Change", OnChangeCallback)
@@ -368,23 +368,23 @@ TesstrainGui() {
 	}
 
 	AddIntegerSelection(title, targetVariableName, description, minValue:=-2147483648, maxValue:=2147483647) {
-		MyGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
-		guiCtrl := MyGui.Add("Edit", "ys hp Number v" targetVariableName)
+		mainGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
+		guiCtrl := mainGui.Add("Edit", "ys hp Number v" targetVariableName)
 		guiCtrl.OnEvent("Change", SetCtrlNameGlobalToCtrlValue)
-		udCtrl := MyGui.Add("UpDown", "Range" minValue "-" maxValue, %targetVariableName%)
+		udCtrl := mainGui.Add("UpDown", "Range" minValue "-" maxValue, %targetVariableName%)
 		AddDescription(description, title)
 	}
 
 	AddNumberSelection(title, targetVariableName, description) {
-		MyGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
-		guiCtrl := MyGui.Add("Edit", "ys Number w" secondColumnWidth " hp v" targetVariableName, %targetVariableName%)
+		mainGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
+		guiCtrl := mainGui.Add("Edit", "ys Number w" secondColumnWidth " hp v" targetVariableName, %targetVariableName%)
 		guiCtrl.OnEvent("Change", SetCtrlNameGlobalToCtrlValue)
 		AddDescription(description, title)
 	}
 
 	AddDropDown(title, optionList, targetVariableName, description, OnChange:="") {
-		MyGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
-		guiCtrl := MyGui.Add("DropDownList", "ys hp w" secondColumnWidth " r10 Sort v" targetVariableName, optionList)
+		mainGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
+		guiCtrl := mainGui.Add("DropDownList", "ys hp w" secondColumnWidth " r10 Sort v" targetVariableName, optionList)
 		guiCtrl.Choose(%targetVariableName%)
 		AddDescription(description, title)
 		guiCtrl.OnEvent("Change", SetCtrlNameGlobalToCtrlText)
@@ -394,16 +394,17 @@ TesstrainGui() {
 	}
 
 	AddButton(title, buttonText, description, OnClick) {
-		MyGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
-		guiCtrl := MyGui.Add("Button", "ys hp", buttonText)
+		mainGui.Add("Text", "section xm w" firstColumnWidth " h" rowHeight " +0x200", title ":")
+		guiCtrl := mainGui.Add("Button", "ys hp", buttonText)
 		guiCtrl.OnEvent("Click", OnClick)
 		AddDescription(description, title)
 	}
 
 	AddDescription(description, title) {
-		descriptionBtn := MyGui.Add("Button", "ys hp", "?")
+		descriptionBtn := mainGui.Add("Button", "ys hp", "?")
 		descriptionBtn.OnEvent("Click", DescriptionBox)
 		DescriptionBox(*) {
+			mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
 			MsgBox(description, title)
 		}
 	}
@@ -412,7 +413,7 @@ TesstrainGui() {
 		if (!defaultValue) {
 			return
 		}
-		descriptionBtn := MyGui.Add("Button", "ys hp", "Default")
+		descriptionBtn := mainGui.Add("Button", "ys hp", "Default")
 		descriptionBtn.OnEvent("Click", SetDefaultValue)
 		SetDefaultValue(btnCtrl, *) {
 			%varableName% := defaultValue
@@ -432,21 +433,21 @@ TesstrainGui() {
 
 	; Updates value of a control and global variable to the provided one
 	UpdateValue(globalName, newValue) {
-		MyGui[globalName].Value := %globalName% := newValue
+		mainGui[globalName].Value := %globalName% := newValue
 	}
 
 	; Updates text value of a control and global variable to the provided one
 	UpdateTextValue(globalName, newValue) {
-		MyGui[globalName].Text := %globalName% := newValue
+		mainGui[globalName].Text := %globalName% := newValue
 	}
 
 	; CALLBACKS
 
 	OnLanguateTypeChange(*) {
-		MyGui["NORM_MODE"].Enabled := false
-		MyGui["PASS_THROUGH_RECORDER"].Enabled := false
-		MyGui["LANG_IS_RTL"].Enabled := false
-		MyGui["GENERATE_BOX_SCRIPT"].Enabled := false
+		mainGui["NORM_MODE"].Enabled := false
+		mainGui["PASS_THROUGH_RECORDER"].Enabled := false
+		mainGui["LANG_IS_RTL"].Enabled := false
+		mainGui["GENERATE_BOX_SCRIPT"].Enabled := false
 
 		if (LANG_TYPE == "Indic") {
 			UpdateValue("NORM_MODE", 2)
@@ -467,10 +468,10 @@ TesstrainGui() {
 			UpdateTextValue("GENERATE_BOX_SCRIPT", "generate_line_box.py")
 		}
 		else {
-			MyGui["NORM_MODE"].Enabled := true
-			MyGui["PASS_THROUGH_RECORDER"].Enabled := true
-			MyGui["LANG_IS_RTL"].Enabled := true
-			MyGui["GENERATE_BOX_SCRIPT"].Enabled := true
+			mainGui["NORM_MODE"].Enabled := true
+			mainGui["PASS_THROUGH_RECORDER"].Enabled := true
+			mainGui["LANG_IS_RTL"].Enabled := true
+			mainGui["GENERATE_BOX_SCRIPT"].Enabled := true
 		}
 	}
 
@@ -482,6 +483,8 @@ TesstrainGui() {
 
 	OnBinDirChange(newBinDir, showErrors:=true) {
 		static binariesList := ["tesseract", "combine_tessdata", "unicharset_extractor", "merge_unicharsets", "lstmtraining", "combine_lang_model"]
+		
+		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
 
 		errored := false
 
@@ -508,11 +511,11 @@ TesstrainGui() {
 		}
 
 		if (errored) {
-			MyGui["BIN_DIR"].SetFont("cRed bold")
+			mainGui["BIN_DIR"].SetFont("cRed bold")
 			WRONG_INPUT_MAP["BIN_DIR"] := "Wrong 'Tesseract executables folder'"
 		}
 		else {
-			MyGui["BIN_DIR"].SetFont("cDefault norm")
+			mainGui["BIN_DIR"].SetFont("cDefault norm")
 			MapSafeDelete(WRONG_INPUT_MAP, "BIN_DIR")
 
 			newTessdataDir := newBinDir "\tessdata"
@@ -526,15 +529,17 @@ TesstrainGui() {
 	}
 
 	OnTessdataDirChange(newTessdataDir, showErrors:=true) {
+		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
+		
 		if (FindAllFiles(newTessdataDir "\*.traineddata").Length == 0) {
 			if (showErrors) {
 				MsgBox("The selected folder doesn't contain any .traineddata files. Please select another one.",, "Iconx")
 			}
-			MyGui["TESSDATA"].SetFont("cRed bold")
+			mainGui["TESSDATA"].SetFont("cRed bold")
 			WRONG_INPUT_MAP["TESSDATA"] := "Wrong 'TessData folder'"
 		}
 		else {
-			MyGui["TESSDATA"].SetFont("cDefault norm")
+			mainGui["TESSDATA"].SetFont("cDefault norm")
 			MapSafeDelete(WRONG_INPUT_MAP, "TESSDATA")
 
 			UpdateStartModel()
@@ -542,9 +547,11 @@ TesstrainGui() {
 	}
 
 	OnGroundTruthDirChange(newGroundTruthDir, showErrors:=true) {
+		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
+		
 		for (imageExtension in SUPPORTED_IMAGE_FILES) {
 			if (FindAllFiles(newGroundTruthDir "\*" imageExtension).Length > 0) {
-				MyGui["GROUND_TRUTH_DIR"].SetFont("cDefault norm")
+				mainGui["GROUND_TRUTH_DIR"].SetFont("cDefault norm")
 				MapSafeDelete(WRONG_INPUT_MAP, "GROUND_TRUTH_DIR")
 				return
 			}
@@ -552,18 +559,20 @@ TesstrainGui() {
 		if (showErrors) {
 			MsgBox("No line images found in your selected Ground Truth directory. Please make sure to copy line image files that would be used for training before starting the training.`nSupported formats: " ArrayJoin(SUPPORTED_IMAGE_FILES, ", "),, "Iconx")
 		}
-		MyGui["GROUND_TRUTH_DIR"].SetFont("cRed bold")
+		mainGui["GROUND_TRUTH_DIR"].SetFont("cRed bold")
 		WRONG_INPUT_MAP["GROUND_TRUTH_DIR"] := "No line image files in the 'Ground Truth folder'"
 	}
 
 	UpdateStartModel() {
+		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
+		
 		modelList := GetStartModelList()
-		MyGui["START_MODEL"].Delete()
-		MyGui["START_MODEL"].Add(modelList)
+		mainGui["START_MODEL"].Delete()
+		mainGui["START_MODEL"].Add(modelList)
 		if (!ArrayContains(modelList, START_MODEL)) {
 			MsgBox("Couldn't find the selected 'Start model' in your 'TessData folder'. Selecting no start model.")
 			START_MODEL := modelList[1]
 		}
-		MyGui["START_MODEL"].Choose(START_MODEL)
+		mainGui["START_MODEL"].Choose(START_MODEL)
 	}
 }

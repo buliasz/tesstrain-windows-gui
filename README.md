@@ -1,6 +1,6 @@
 # Tesstrain GUI for Windows
 
-> Training workflow GUI version 1.1 for Tesseract 4 as a Windows GUI executable and AutoHotKey script file.
+> Training workflow GUI version 1.2 for Tesseract 4 as a Windows GUI executable and AutoHotKey script file.
 
 ## Install
 
