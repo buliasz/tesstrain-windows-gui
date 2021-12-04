@@ -16,8 +16,8 @@ AppVeyor](https://ci.appveyor.com/project/zdenop/tesseract/build/artifacts). You
 a copy of some 'traineddata' files which you can find for example on the [official Tesseract
 website](https://tesseract-ocr.github.io/tessdoc/#traineddata-files-1)).
 
-If you prefer, you can also [build](https://tesseract-ocr.github.io/tessdoc/Compiling.html#windows) and [install
-instructions](https://tesseract-ocr.github.io/tessdoc/Compiling-%E2%80%93-GitInstallation)
+If you prefer, you can also [build](https://tesseract-ocr.github.io/tessdoc/Compiling.html#windows) and 
+[install](https://tesseract-ocr.github.io/tessdoc/Compiling-%E2%80%93-GitInstallation)
 binaries on your own. More information can be found in the [Tesseract User
 Manual](https://tesseract-ocr.github.io/tessdoc/).
 
@@ -36,7 +36,7 @@ GUI when needed.
 
 ## Choose model name
 
-Tesstrain GUI will ask you for name for your model. By convention, Tesseract stack models including
+Tesstrain GUI will ask you for a name for your model. By convention, Tesseract stack models including
 language-specific resources use (lowercase) three-letter codes defined in
 [ISO 639](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) with additional
 information separated by underscore. E.g., `chi_tra_vert` for **tra**ditional
@@ -47,8 +47,8 @@ the model name is referenced by `MODEL_NAME`.
 
 ## Provide ground truth
 
-Place ground truth consisting of line images and transcriptions in the folder
-`data/MODEL_NAME-ground-truth`. This list of files will be split into training and
+Place ground truth consisting of line images and transcriptions in a folder of your choice (default: 
+`data/MODEL_NAME-ground-truth`). This list of files will be split into training and
 evaluation data, the ratio is defined by the `RATIO_TRAIN` variable.
 
 Images must be in `.tif`, `.png`, `.bin.png`, `.nrm.png` or `.bmp` format.

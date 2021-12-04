@@ -11,7 +11,7 @@
 
 ; Allows preview recognition after training is done
 
-VerifyRecognition(btnCtrl, *) {
+PreviewRecognition(btnCtrl, *) {
 	col1Width := 200
 	col2Width := 600
 

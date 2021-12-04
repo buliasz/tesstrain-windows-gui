@@ -12,7 +12,7 @@
 #include _tesstrain.ahki
 #include _gt_txt_creator.ahki
 #include _gui_backend.ahki
-#include _recognition_verifier.ahki
+#include _recognition_preview.ahki
 
 #NoTrayIcon
 #SingleInstance Off
@@ -52,7 +52,7 @@ TesstrainGui() {
 	CreateGui()
 
 	CreateGui()	{
-		MyGui := Gui("+Resize", "Tesstrain GUI")
+		MyGui := Gui(, "Tesstrain GUI")
 
 		AddCheckbox(
 			"Debug mode",
@@ -256,10 +256,10 @@ TesstrainGui() {
 		)
 
 		AddButton(
-			"Verify recognition",
-			"Verify",
-			"Shows image and OCR result for all your Ground Truth images.",
-			VerifyRecognition,
+			"Preview recognition",
+			"Preview",
+			"Shows image and current OCR result for all your Ground Truth images.",
+			PreviewRecognition,
 		)
 
 		AddButtonWithCheckboxes(

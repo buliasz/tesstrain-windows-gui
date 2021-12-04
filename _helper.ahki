@@ -152,7 +152,7 @@ FindAllFiles(pattern) {
 }
 
 FileGetFirstLine(filePath) {
-	return GetFileLine(file, 1) 
+	return GetFileLine(filePath, 1) 
 }
 
 GetFileLine(filePath, lineNumber) {
