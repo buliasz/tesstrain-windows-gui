@@ -49,7 +49,14 @@ ExecuteCommand(command:="", mode:=1, admin:=false) {
 	AttachConsole()
 	
 	objShell := ComObject("WScript.Shell")
-	objExec := objShell.Exec(command)
+	try {
+		objExec := objShell.Exec(command)
+	} catch Error as e {
+		errMsg := "Received exception during exeution of command: '" command "'."
+			. "`nException: " e.Message
+		extraMsg := DescribeException(e)
+		throw Error(errMsg, -1, extraMsg)
+	}
 	
 	stdOut := stdErr := ""
 

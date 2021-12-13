@@ -297,14 +297,14 @@ OnError MyErrorFunction
 MyErrorFunction(_exception, _mode) {
     MsgBox(DescribeException(_exception) "`nMode: " _mode)
     ExitApp	; It's an unhandled exception. We want to Shutdown the app.
-	
-	DescribeException(e) {
-		extra := e.HasProp("Extra") ? e.Extra : ""
-		return "Exception: " e.Message " in " e.What " at " e.File ":" e.Line
-			.  (extra ? "`nAdditional information (e.Extra):`n" extra : "")  "`n`n"
-			. CallStack(2)
-	}
-	
+}
+
+DescribeException(e) {
+	extra := e.HasProp("Extra") ? e.Extra : ""
+	return "Exception: " e.Message " in " e.What " at " e.File ":" e.Line
+		.  (extra ? "`nAdditional information (e.Extra):`n" extra : "")  "`n`n"
+		. CallStack(2)
+
 	CallStack(startOffset:=0, maxLevels:="") {
 		if (A_IsCompiled) {
 			return

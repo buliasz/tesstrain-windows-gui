@@ -47,7 +47,7 @@ StartTrainingCb(buttonCtrl, *) {
 	try {
 		StartTraining()
 	} catch Error as e {
-		MsgBox e.Message
+		MsgBox(e.Message ((DEBUG_MODE && e.HasProp("Extra")) ? "`n`n" e.Extra : ""))
 	} else {
 		UpdateModelFileInTessdata()
 		MsgBox "Training finised"

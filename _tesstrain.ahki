@@ -216,7 +216,7 @@ GenerateUnicharset() {
 			"`"" BINARIES["unicharset_extractor"] "`""
 				. " --output_unicharset `"" OUTPUT_DIR "\my.unicharset`""
 				. " --norm_mode " NORM_MODE
-				. " " GenerateAllGtTxtFileList()
+				. " `"" CreateCombinedGtTxtFile() "`""
 		)
 		ExecuteCommand(
 			"`"" BINARIES["merge_unicharsets"] "`""
@@ -230,13 +230,19 @@ GenerateUnicharset() {
 			"`"" BINARIES["unicharset_extractor"] "`""
 				. " --output_unicharset `"" target "`""
 				. " --norm_mode " NORM_MODE
-				. " " GenerateAllGtTxtFileList())
+				. " `"" CreateCombinedGtTxtFile() "`""
+		)
 	}
 }
 
-GenerateAllGtTxtFileList() {
+CreateCombinedGtTxtFile() {
 	gtTxtList := FindAllFiles(GROUND_TRUTH_DIR "\*.gt.txt")
-	return "`"" ArrayJoin(gtTxtList, "`" `"") "`""
+	allGt := OUTPUT_DIR "\all-gt"
+	for (gtTxtFile in gtTxtList) {
+		text := FileRead(gtTxtFile)
+		FileAppend(text, allGt)
+	}
+	return allGt
 }
 
 ; Create lists of lstmf filenames for training and eval
@@ -296,7 +302,11 @@ GenerateLstmfFile(name) {
 	}
 
 	if (!imageFile) {
-		throw Error("Image file not found for '" name ".gt.txt'")
+		if (YesNoConfirmation("Image file not found for '" name ".gt.txt'. Do you want to delete it?")) {
+			FileDelete(name ".gt.txt")
+		}
+		
+		throw Error("Because of .gt.txt file(s) without corresponding picture, currently created unicharset may be wrong. Please restart training.")
 	}
 
 	if (FileExist(name ".lstmf")) {
