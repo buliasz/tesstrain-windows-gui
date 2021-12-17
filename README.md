@@ -1,19 +1,19 @@
-# Tesstrain GUI for Windows
+# Tesseract train GUI for Windows
 
-> Training workflow GUI version 1.3 for Tesseract 4 as a Windows GUI executable and AutoHotKey script file.
+> Tesseract language training GUI for Windows version 1.3 for Tesseract 4+. Both Windows executable and source AutoHotKey script files are provided.
 
 ## Install
 
-The GUI is a portable executable. You can copy `tesstrain_gui.exe` file to any directory and run it.
+The GUI executable is portable. You can copy the `tesstrain_gui.exe` file to any directory and execute it.
 
-### leptonica, tesseract
+### Requirements
 
-You will need a recent version (>= 4.0.0beta1) of tesseract built with the
-training tools and matching leptonica bindings.
+You will need version 4 or newer of Tesseract executables (that include the
+training tools and matching leptonica bindings).
 
 You can download executables built from the latest code version using the [zdenop's
 AppVeyor](https://ci.appveyor.com/project/zdenop/tesseract/build/artifacts). You will also need
-a copy of some 'traineddata' files which you can find for example on the [official Tesseract
+a copy of 'traineddata' which you can find for example on the [official Tesseract
 website](https://tesseract-ocr.github.io/tessdoc/#traineddata-files-1)).
 
 If you prefer, you can also [build](https://tesseract-ocr.github.io/tessdoc/Compiling.html#windows) and 
