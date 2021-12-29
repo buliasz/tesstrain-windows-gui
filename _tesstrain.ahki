@@ -235,10 +235,28 @@ GenerateUnicharset() {
 	}
 }
 
+CheckLineImageExistence(name) {
+	imageFile := ""
+
+	for (extension in SUPPORTED_IMAGE_FILES) {
+		if FileExist(name extension) {
+			return true
+		}
+	}
+
+	if (YesNoConfirmation("Corresponding Line Image file not found for '" name ".gt.txt'. Do you want to delete it?")) {
+		FileDelete(name ".gt.txt")
+	}
+	return false
+}
+
 CreateCombinedGtTxtFile() {
 	gtTxtList := FindAllFiles(GROUND_TRUTH_DIR "\*.gt.txt")
 	allGt := OUTPUT_DIR "\all-gt"
 	for (gtTxtFile in gtTxtList) {
+		if (!CheckLineImageExistence(StrCutEnd(gtTxtFile, StrLen(".gt.txt")))) {
+			continue
+		}
 		text := FileRead(gtTxtFile)
 		FileAppend(text, allGt)
 	}
@@ -299,14 +317,6 @@ GenerateLstmfFile(name) {
 			imageFile := name extension
 			break
 		}
-	}
-
-	if (!imageFile) {
-		if (YesNoConfirmation("Image file not found for '" name ".gt.txt'. Do you want to delete it?")) {
-			FileDelete(name ".gt.txt")
-		}
-		
-		throw Error("Because of .gt.txt file(s) without corresponding picture, currently created unicharset may be wrong. Please restart training.")
 	}
 
 	if (FileExist(name ".lstmf")) {
