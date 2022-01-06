@@ -151,6 +151,14 @@ FindAllFiles(pattern) {
 	return filesFound
 }
 
+FindAllFilesExtended(pattern) {
+	filesFound := []
+	loop Files, pattern {
+		filesFound.Push({path: A_LoopFileFullPath, modified: A_LoopFileTimeModified})
+	}
+	return filesFound
+}
+
 FileGetFirstLine(filePath) {
 	return GetFileLine(filePath, 1) 
 }

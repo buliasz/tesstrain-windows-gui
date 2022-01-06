@@ -22,18 +22,21 @@ PreviewRecognition(btnCtrl, *) {
 	imageGui := Gui("+Resize -DPIScale +Owner" btnCtrl.Gui.Hwnd, "Trained Image")
 	imageList := []
 	for fileExtension in SUPPORTED_IMAGE_FILES {
-		ArrayPushAll(FindAllFiles(GROUND_TRUTH_DIR "\*" fileExtension), imageList)
+		ArrayPushAll(FindAllFilesExtended(GROUND_TRUTH_DIR "\*" fileExtension), imageList)
 	}
+	
+	imageList := ArraySort(imageList, (a,b)=>a.modified-b.modified) 	; Sort by modificaton date descending
 
 	imageGui.Add("Text", "section xm w" col1Width, "Processed image:")
 	pathCtrl := imageGui.Add("Text", "ys w" col2Width " vImagePath", " ")
 
-	imageGui.Add("Text", "section xm w" col1Width, "Value from .gt.txt file:")
-	gtTxtCtrl := imageGui.Add("Text", "ys w" col2Width " vGtTxtValue", " ")
-
 	imageGui.Add("Text", "section xm w" col1Width, "Recongized value:")
-	ocrResultCtrl := imageGui.Add("Text", "ys w" col2Width " vOcrResult h30", " ")
+	ocrResultCtrl := imageGui.Add("Text", "ys h30 w" col2Width " vOcrResult", " ")
 	ocrResultCtrl.SetFont("cBlue s15 w666")
+
+	imageGui.Add("Text", "section xm h35 w" col1Width, "Value from .gt.txt file:")
+	gtTxtCtrl := imageGui.Add("Text", "ys h30 w" col2Width " vGtTxtValue", " ")
+	gtTxtCtrl.SetFont("cRed s15 w666")
 
 	skipBtn := imageGui.Add("Button", "xm section default", "&Next")
 	skipBtn.OnEvent("Click", ShowNextImage)
@@ -59,7 +62,7 @@ PreviewRecognition(btnCtrl, *) {
 			WinClose(imageGui)
 			return
 		}
-		imageFullPath := imageList.Pop()
+		imageFullPath := imageList.Pop().path
 		pathCtrl.Text := imageFullPath
 		ocrResultCtrl.Text := "..."
 		gtTxtPath := RemoveImageExtension(imageFullPath) ".gt.txt"

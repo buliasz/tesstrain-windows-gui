@@ -256,9 +256,9 @@ TesstrainGui() {
 		)
 
 		AddButton(
-			"Preview recognition",
+			"Ground Truth Preview",
 			"Preview",
-			"Shows image and current OCR result for all your Ground Truth images.",
+			"Shows image, 'gt.txt' value and current OCR result for all your Ground Truth images.",
 			PreviewRecognition,
 		)
 
@@ -274,15 +274,15 @@ TesstrainGui() {
 		)
 
 		; Main buttons
-		startBtn := mainGui.Add("Button", "default xs section +center", "&Start Training")
+		startBtn := mainGui.Add("Button", "default xs section +center", "Start &Training")
 		startBtn.OnEvent("Click", StartTrainingCb)
-		exitBtn := mainGui.Add("Button", "ys x+10 checked", "&Exit")
+		exitBtn := mainGui.Add("Button", "ys x+10 checked", "E&xit")
 		exitBtn.OnEvent("Click", ExitGui)
 		resetBtn := mainGui.Add("Button", "ys x+10 checked", "&Reload")
 		resetBtn.OnEvent("Click", (*)=>(mainGui.Destroy(), TesstrainGui()))
-		saveBtn := mainGui.Add("Button", "ys x+10 checked", "Sa&ve settings")
+		saveBtn := mainGui.Add("Button", "ys x+10 checked", "&Save settings")
 		saveBtn.OnEvent("Click", SaveSettings)
-		autosaveChb := mainGui.Add("Checkbox", "ys hp 0x20 Checked" AUTO_SAVE " vAUTO_SAVE", "Save automatically on 'Start Training'")
+		autosaveChb := mainGui.Add("Checkbox", "ys hp 0x20 Checked" AUTO_SAVE " vAUTO_SAVE", "Save &automatically on 'Start Training'")
 		autosaveChb.OnEvent("Click", SetCtrlNameGlobalToCtrlValue)
 
 		OnBinDirChange(BIN_DIR, false)
