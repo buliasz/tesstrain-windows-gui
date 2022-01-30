@@ -339,3 +339,12 @@ DescribeException(e) {
 		return ret
 	}
 }
+
+DisableSystemStandby(shouldDisable) {
+	static oldState:=0
+	newState := shouldDisable ? 0x80000001 : 0x80000000
+	if (newState != oldState) {
+		DllCall("SetThreadExecutionState", "UInt", newState)
+		oldState := newState
+	}
+}

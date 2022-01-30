@@ -168,6 +168,7 @@ TrainAndProduceCheckpoints() {
 
 	DirCreate(OUTPUT_DIR "\checkpoints")
 
+	DisableSystemStandby(true)	; prevent System standby during training
 	if (START_MODEL != "") {
 		ExecuteCommand(
 			"`"" BINARIES["lstmtraining"] "`""
@@ -198,6 +199,7 @@ TrainAndProduceCheckpoints() {
 				. " --target_error_rate " TARGET_ERROR_RATE,
 			3)
 	}
+	DisableSystemStandby(false)
 }
 
 ; Create unicharset
