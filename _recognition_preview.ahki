@@ -40,6 +40,10 @@ PreviewRecognition(btnCtrl, *) {
 
 	skipBtn := imageGui.Add("Button", "xm section default", "&Next")
 	skipBtn.OnEvent("Click", ShowNextImage)
+
+	skipBtn := imageGui.Add("Button", "ys", "Find next &Wrong OCR")
+	skipBtn.OnEvent("Click", ShowNextWrong)
+
 	exitBtn := imageGui.Add("Button", "ys", "&Close")
 	exitBtn.OnEvent("Click", CloseCb)
 	picCtrl := imageGui.Add("Pic", "xm")
@@ -54,6 +58,12 @@ PreviewRecognition(btnCtrl, *) {
 	WinWaitClose(imageGui)
 
 	return
+
+	ShowNextWrong(*) {
+		loop {
+			ShowNextImage()
+		} until imageList.Length == 0 || ocrResultCtrl.Text != gtTxtCtrl.Text
+	}
 
 	ShowNextImage(*) {
 		if (imageList.Length == 0) {
