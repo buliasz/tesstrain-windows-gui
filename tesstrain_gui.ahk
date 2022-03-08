@@ -54,7 +54,7 @@ TesstrainGui() {
 	CreateGui()	{
 		mainGui := Gui("+OwnDialogs", "Tesstrain GUI")
 
-		tabs := mainGui.Add("Tab3", , ["General","Advanced"])
+		tabs := mainGui.Add("Tab3", , ["Main settings","Advanced"])
 		
 		AddFolderSelection(
 			"Tesseract executables folder",
@@ -151,9 +151,9 @@ TesstrainGui() {
 			["generate_line_box.py", "generate_line_syllable_box.py", "generate_wordstr_box.py"],
 			"GENERATE_BOX_SCRIPT",
 			"Following scripts are available:`n"
-				. "- 'generate_line_box.py': Creates tesseract box files for given (line) image text pairs.`n"
-				. "- 'generate_line_syllable_box.py': Creates tesseract box files for given (line) image text pairs. Generates grapheme clusters. (Not the full Unicode text segmentation algorithm, but probably good enough for Devanagari).`n"
-				. "- 'generate_wordstr_box.py': Creates tesseract WordStr box files for given (line) image text pairs."
+				. "- 'generate_line_box.py': Creates tesseract box files for given line-image:text pairs.`n"
+				. "- 'generate_line_syllable_box.py': Creates tesseract box files for given line-image:text pairs. Generates grapheme clusters. (Not the full Unicode text segmentation algorithm, but probably good enough for Devanagari).`n"
+				. "- 'generate_wordstr_box.py': Creates tesseract WordStr box files for given line-image:text pairs."
 				. "`n`nYou need to select 'Language Type':'Custom' to be able to modify this setting."
 		)
 		AddIntegerSelection(
@@ -192,24 +192,6 @@ TesstrainGui() {
 			"Target error rate",
 			"TARGET_ERROR_RATE",
 			"Expected final recognition error percentage. Stop training if the Character Error Rate (CER) gets below this value.`n`nIt's the '--target_error_rate' argument for 'lstmtraining'. (Default: 0.01)"
-		)
-
-		AddButton(
-			"Ground Truth Preview",
-			"Preview",
-			"Shows image, 'gt.txt' value and current OCR result for all your Ground Truth images starting from the newest files.",
-			PreviewRecognition,
-		)
-
-		AddButtonWithCheckboxes(
-			"Generate 'best' and/or 'fast' traineddata",
-			"Generate",
-			GenerateTrainedData,
-			Map(
-				"best", "CREATE_BEST_TRAINEDDATA",
-				"fast", "CREATE_FAST_TRAINEDDATA",
-			),
-			"Allows you to generate 'best' and/or 'fast' traineddata from any checkpoint file created during training process (including the final one). The default .traineddata file generated during the training process located inside your selected 'Training files output directory' is the 'best' version for the final checkpoint. Checkpoint file names include Character Error Rate (CER), which is the first part after model name. The best ones are with the lowest CER rate."
 		)
 
 		; Advanced tab
@@ -287,7 +269,28 @@ TesstrainGui() {
 
 		; Main buttons
 		tabs.UseTab()
-		startBtn := mainGui.Add("Button", "default section +center", "Start &Training")
+
+
+		AddButton(
+			"Ground Truth Preview",
+			"Preview",
+			"Shows image, 'gt.txt' value and current OCR result for all your Ground Truth images starting from the newest files.",
+			PreviewRecognition,
+			true,
+		)
+
+		AddButtonWithCheckboxes(
+			"Generate 'best' and/or 'fast' traineddata",
+			"Generate",
+			GenerateTrainedData,
+			Map(
+				"best", "CREATE_BEST_TRAINEDDATA",
+				"fast", "CREATE_FAST_TRAINEDDATA",
+			),
+			"Allows you to generate 'best' and/or 'fast' traineddata from any checkpoint file created during training process (including the final one). The default .traineddata file generated during the training process located inside your selected 'Training files output directory' is the 'best' version for the final checkpoint. Checkpoint file names include Character Error Rate (CER), which is the first part after model name. The best ones are with the lowest CER rate."
+		)
+
+		startBtn := mainGui.Add("Button", "default xs section +center", "Start &Training")
 		startBtn.OnEvent("Click", StartTrainingCb)
 		exitBtn := mainGui.Add("Button", "ys x+10 checked", "E&xit")
 		exitBtn.OnEvent("Click", ExitGui)
@@ -407,8 +410,8 @@ TesstrainGui() {
 		}
 	}
 
-	AddButton(title, buttonText, description, OnClick) {
-		mainGui.Add("Text", "section xs w" firstColumnWidth " h" rowHeight " +0x200", title)
+	AddButton(title, buttonText, description, OnClick, skipXs:=false) {
+		mainGui.Add("Text", "section " (skipXs ? "" : "xs ") "w" firstColumnWidth " h" rowHeight " +0x200", title)
 		guiCtrl := mainGui.Add("Button", "ys hp", buttonText)
 		guiCtrl.OnEvent("Click", OnClick)
 		AddDescription(description, title)
