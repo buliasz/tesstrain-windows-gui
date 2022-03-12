@@ -181,7 +181,7 @@ TesstrainGui() {
 		AddNumberSelection(
 			"Train/eval ratio",
 			"RATIO_TRAIN",
-			"Ratio of train / eval training data. (Default: 0.90)"
+			"Ratio of train/eval training data. For example 0.9 means 90% of trainig data is used for training mechanism and the remaining 10% is used for evaluations of current training results. (Default: 0.90)"
 		)
 		AddIntegerSelection(
 			"Maximum iterations",
@@ -191,7 +191,8 @@ TesstrainGui() {
 		AddNumberSelection(
 			"Target error rate",
 			"TARGET_ERROR_RATE",
-			"Expected final recognition error percentage. Stop training if the Character Error Rate (CER) gets below this value.`n`nIt's the '--target_error_rate' argument for 'lstmtraining'. (Default: 0.01)"
+			"Expected final recognition error percentage. Stop training if the Character Error Rate (CER) gets below this value. It's the '--target_error_rate' argument for 'lstmtraining'.`n`n"
+				. "(Default: 0.01)"
 		)
 
 		; Advanced tab

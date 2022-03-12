@@ -31,8 +31,8 @@ in your PATH environment variable).
 
 ### Language data
 
-Tesseract expects some configuration data (a file `radical-stroke.txt`). It will be downloaded automatically by the
-GUI when needed.
+Tesseract expects some configuration data (a file `radical-stroke.txt`). It will be downloaded automatically by the GUI when needed from [this address](https://github.com/tesseract-ocr/langdata_lstm/raw/main/radical-stroke.txt) and placed in the configurable "Output data directory".
+
 
 ## Choose model name
 
@@ -48,8 +48,7 @@ the model name is referenced by `MODEL_NAME`.
 ## Provide ground truth
 
 Place ground truth consisting of line images and transcriptions in a folder of your choice (default: 
-`data/MODEL_NAME-ground-truth`). This list of files will be split into training and
-evaluation data, the ratio is defined by the `RATIO_TRAIN` variable.
+`data/MODEL_NAME-ground-truth`). GUI will generate list of those files, and split into training and evaluation data, the ratio can be defined in the GUI.
 
 Images must be in `.tif`, `.png`, `.bin.png`, `.nrm.png` or `.bmp` format.
 
