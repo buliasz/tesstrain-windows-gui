@@ -208,9 +208,9 @@ CmdLogAppend(text) {
 }
 
 OcrImageFile(imageFullPath, lang:="") {
-	ocrOutput := ExecuteCommand(BINARIES["tesseract"] " `"" imageFullPath "`" -"
+	ocrOutput := ExecuteCommand("`"" BINARIES["tesseract"] "`" `"" imageFullPath "`" -"
 		. (lang ? " -l " lang : "")
-		. " --psm 13 -c page_separator= --tessdata-dir " TESSDATA)
+		. " --psm 13 -c page_separator= --tessdata-dir `"" TESSDATA "`"")
 	return Trim(ocrOutput.StdOut, "`t`n`r ")
 }
 

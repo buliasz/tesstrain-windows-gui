@@ -31,7 +31,7 @@ ExecuteCommand(command:="", mode:=1, admin:=false) {
 	}
 	
 	if (mode > 1) {
-		command := "cmd /U /V:ON /C `"" command "`""
+		command := A_ComSpec " /U /V:ON /C `"" command "`""
 	}
 	
 	if (mode == 3) {
