@@ -81,7 +81,8 @@ TesstrainGui() {
 			"Start model (optional)",
 			modelList,
 			"START_MODEL",
-			"Model to use as a starting one and continue from it. Model files are the ones with '.traineddata' extension in your 'TessData folder'.",
+			"Model to use as a starting one and continue from it. Model files are the ones with '.traineddata' extension in your 'TessData folder'.`n"
+				. "Only 'best' tessdata file version can be used for it. Please check Tesseract User Manual section `"Traineddata Files`" for details.",
 			OnStartModelChange
 		)
 
