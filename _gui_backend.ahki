@@ -45,12 +45,16 @@ StartTrainingCb(buttonCtrl, *) {
 	StatusUpdate := ProgressStatusGui
 	StatusUpdate("Training startup", buttonCtrl.Gui)
 	try {
-		StartTraining()
+		trainingSuccess := StartTraining()
 	} catch Error as e {
 		MsgBox(e.Message ((DEBUG_MODE && e.HasProp("Extra")) ? "`n`n" e.Extra : ""))
 	} else {
-		UpdateModelFileInTessdata()
-		MsgBox "Training finised"
+		if (trainingSuccess) {
+			UpdateModelFileInTessdata()
+			MsgBox "Training finised"
+		} else {
+			MsgBox "Training ended with error"
+		}
 	}
 
 	StatusUpdate()	; closes status and re-enables main Gui
@@ -63,11 +67,11 @@ StartTrainingCb(buttonCtrl, *) {
 		generatedModelFile := DATA_DIR "\" MODEL_NAME ".traineddata"
 		shouldCopy := false
 		if (!FileExist(generatedModelFile)) {
-			MsgBox("There is no newly generated model of name " MODEL_NAME " inside the " DATA_DIR " folder. Probably training didn't finish.")
+			MsgBox("There is no newly generated model of name '" MODEL_NAME "' inside the " DATA_DIR " folder. Probably training didn't finish.")
 			return false
 		}
 		if (!FileExist(tessdataModelFile)) {
-			shouldCopy := YesNoConfirmation("Your new model doesn't exist in your 'tessdata' folder. Do you want me to copy it so that you will be able to use it for testing?")
+			shouldCopy := YesNoConfirmation("Your new model doesn't exist in your 'tessdata' folder. Do you want me to copy it so that you will be able to use it for recognition?")
 			if (!shouldCopy) {
 				return false
 			}
@@ -76,7 +80,18 @@ StartTrainingCb(buttonCtrl, *) {
 		}
 
 		if (shouldCopy) {
-			FileCopy(generatedModelFile, tessdataModelFile, true)
+			try {
+				FileCopy(generatedModelFile, tessdataModelFile, true)
+			} catch Error as e {
+				if (YesNoConfirmation("Could not copy model file. Probably you don't have required privilages.`n"
+					. "Do you want me to try again as an Administrator?")) {
+					ExecuteCommand("copy /y `"" generatedModelFile "`" `"" tessdataModelFile "`"", 3, true)
+					ExecuteCommand()
+				} else {
+					MsgBox("Error updating model file for recognition preview.`n" e.Message)
+					return false
+				}
+			}
 		}
 		return true
 	}

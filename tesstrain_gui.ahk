@@ -16,6 +16,7 @@
 
 #NoTrayIcon
 #SingleInstance Off
+FileEncoding "UTF-8-RAW"
 
 if (!A_IsCompiled) {
 	TraySetIcon(A_ScriptDir "\icon.ico",,true)
@@ -52,7 +53,7 @@ TesstrainGui() {
 	CreateGui()
 
 	CreateGui()	{
-		mainGui := Gui("+OwnDialogs", "Tesstrain GUI")
+		mainGui := Gui("+OwnDialogs", "Tesstrain GUI v2.0")
 
 		tabs := mainGui.Add("Tab3", , ["Main settings","Advanced"])
 		

@@ -207,10 +207,13 @@ CmdLogAppend(text) {
 	FileAppend text, "command.log"
 }
 
-OcrImageFile(imageFullPath, lang:="") {
+OcrImageFile(imageFullPath, lang:="", tessdataDir:="") {
+	if (!tessdataDir) {
+		tessdataDir := TESSDATA
+	}
 	ocrOutput := ExecuteCommand("`"" BINARIES["tesseract"] "`" `"" imageFullPath "`" -"
 		. (lang ? " -l " lang : "")
-		. " --psm 13 -c page_separator= --tessdata-dir `"" TESSDATA "`"")
+		. " --psm 13 -c page_separator= --tessdata-dir `"" tessdataDir "`"")
 	return Trim(ocrOutput.StdOut, "`t`n`r ")
 }
 

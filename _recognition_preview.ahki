@@ -14,9 +14,22 @@
 PreviewRecognition(btnCtrl, *) {
 	col1Width := 200
 	col2Width := 600
+	tessdataDirForOcr := DATA_DIR
+	modelNameForOcr := MODEL_NAME
 
-	if (!UpdateModelFileInTessdata()) {
-		return
+	if (!CheckGeneratedModelExistence()) {
+		message := "There is no newly generated model of name '" MODEL_NAME "' inside the '" DATA_DIR "' folder.`n"
+		if (START_MODEL) {
+			if (YesNoConfirmation(message "Do you want to use Start Model instead for this preview?")) {
+				tessdataDirForOcr := TESSDATA
+				modelNameForOcr := START_MODEL
+			} else {
+				return
+			}
+		} else {
+			MsgBox(message "Please execute training or select a Start Model.")
+			return
+		}
 	}
 
 	imageGui := Gui("+Resize -DPIScale +Owner" btnCtrl.Gui.Hwnd, "Trained Image")
@@ -85,7 +98,7 @@ PreviewRecognition(btnCtrl, *) {
 
 		imageGui.Show("xCenter AutoSize")  ; Resize the window to match the picture size.
 
-		recognizedValue := OcrImageFile(imageFullPath, START_MODEL)
+		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr)
 		ocrResultCtrl.Text := recognizedValue
 	}
 
@@ -94,37 +107,8 @@ PreviewRecognition(btnCtrl, *) {
 		imageGui.Destroy()
 	}
 
-	UpdateModelFileInTessdata() {
-		tessdataModelFile := TESSDATA "\" MODEL_NAME ".traineddata"
+	CheckGeneratedModelExistence() {
 		generatedModelFile := DATA_DIR "\" MODEL_NAME ".traineddata"
-		shouldCopy := false
-		if (!FileExist(generatedModelFile)) {
-			MsgBox("There is no newly generated model of name " MODEL_NAME " inside the " DATA_DIR " folder. Please execute training first.")
-			return false
-		}
-		if (!FileExist(tessdataModelFile)) {
-			shouldCopy := YesNoConfirmation("Your new model doesn't exist in your 'tessdata' folder. Do you want me to copy it so that you will be able to use it for testing?")
-			if (!shouldCopy) {
-				return false
-			}
-		} else if (IsFileOlder(tessdataModelFile, generatedModelFile)) {
-			shouldCopy := YesNoConfirmation("Your new model is newer than the one existing in your 'tessdata' folder. Do you want me to update it so that you will be able to use it for testing?")
-		}
-
-		if (shouldCopy) {
-			try {
-				FileCopy(generatedModelFile, tessdataModelFile, true)
-			} catch Error as e {
-				if (YesNoConfirmation("Could not copy model file. Probably you don't have required privilages.`n"
-					. "Do you want me to try again as Administrator?")) {
-					ExecuteCommand("copy /y `"" generatedModelFile "`" `"" tessdataModelFile "`"", 3, true)
-					ExecuteCommand()
-				} else {
-					MsgBox("Error updating model file for recognition preview.`n" e.Message)
-					return false
-				}
-			}
-		}
-		return true
+		return FileExist(generatedModelFile)
 	}
 }

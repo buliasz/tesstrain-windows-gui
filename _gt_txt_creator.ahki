@@ -24,7 +24,11 @@ VerifyGtTxtFiles(parentGui) {
 }
 
 GtTxtPrompt(imageFullPath, gtTxtPath, parentGui) {
-	recognizedValue := OcrImageFile(imageFullPath, START_MODEL)
+	if (START_MODEL) {
+		recognizedValue := OcrImageFile(imageFullPath, START_MODEL)
+	} else {
+		recognizedValue := ""
+	}
 
 	Width := A_ScreenWidth // 2
 

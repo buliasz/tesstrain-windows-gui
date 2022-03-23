@@ -130,10 +130,14 @@ StrLengthCmp(str1, str2) {
 ; If LAST_CHECKPOINT already exists it will just convert it to .traineddata file
 StartTraining() {
 	if (!FileExist(LAST_CHECKPOINT)) {
-		TrainAndProduceCheckpoints()
+		if (!TrainAndProduceCheckpoints()) {
+			StatusUpdate("Training error")
+			return false
+		}
 	}
 	Checkpoint2Traineddata(LAST_CHECKPOINT, DATA_DIR "\" MODEL_NAME ".traineddata", false)
 	StatusUpdate("Training finished")
+	return true
 }
 
 MultipleCheckpointToTraineddata(checkpointFileList, isFast) {
@@ -167,6 +171,7 @@ TrainAndProduceCheckpoints() {
 	StatusUpdate("Executing the training")
 
 	DirCreate(OUTPUT_DIR "\checkpoints")
+	SetWorkingDir OUTPUT_DIR
 
 	DisableSystemStandby(true)	; prevent System standby during training
 	if (START_MODEL != "") {
@@ -200,6 +205,9 @@ TrainAndProduceCheckpoints() {
 			3)
 	}
 	DisableSystemStandby(false)
+
+	SetWorkingDir(A_ScriptDir)
+	return true
 }
 
 ; Create unicharset
@@ -373,7 +381,17 @@ DeleteLstmfFiles() {
 
 ; Clean generated output files
 DeleteModelData() {
+	SetWorkingDir(A_ScriptDir)
 	if (DirExist(OUTPUT_DIR)) {
-		DirDelete(OUTPUT_DIR, true)
+		loop {
+			try {
+				DirDelete(OUTPUT_DIR, true)
+				break
+			} catch Error as e {
+				if (!YesNoConfirmation("Could not delete '" OUTPUT_DIR "'. Do you want to try removing it again?")) {
+					throw Error("Output directory could not be removed")
+				}
+			}
+		}
 	}
 }

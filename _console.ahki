@@ -35,11 +35,22 @@ ExecuteCommand(command:="", mode:=1, admin:=false) {
 	}
 	
 	if (mode == 3) {
-		if (DEBUG_MODE) {
-			command .= " & pause"
-		}
 		FreeConsole()
+
+		if (DEBUG_MODE) {
+			; MsgBox "Executing: " command
+			command .= " || ( echo 1 > twg_cmd_err ) & pause"
+		} else {
+			command .= " || ( echo 1 > twg_cmd_err & pause )"
+		}
+
 		RunWait((admin ? "*RunAs " : "") command)
+
+		if (FileExist("twg_cmd_err")) {
+			FileDelete("twg_cmd_err")
+			throw Error("Command execution interrupted by user or exited with error. Details were shown in the console window.")
+		}
+
 		return
 	}
 	
