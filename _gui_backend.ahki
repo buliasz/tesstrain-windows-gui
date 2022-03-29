@@ -28,7 +28,7 @@ StartTrainingCb(buttonCtrl, *) {
 	outputDataExists := FileExist(OUTPUT_DIR "\unicharset")
 
 	if (outputDataExists) {
-		if (YesNoConfirmation("The 'Training files output directory' (" OUTPUT_DIR ") already contains data. Do you want me to clean it? Otherwise any new Ground Truth content won't be used in this training.")) {
+		if (AUTO_CLEAN_OLD_DATA || YesNoConfirmation("The 'Training files output directory' (" OUTPUT_DIR ") already contains data. Do you want me to clean it? Otherwise any new Ground Truth content won't be used in this training.")) {
 			DeleteModelData()
 			outputDataExists := false
 		}
@@ -38,12 +38,14 @@ StartTrainingCb(buttonCtrl, *) {
 		VerifyGtTxtFiles(buttonCtrl.Gui)
 	}
 
-	if (AUTO_SAVE) {
-		SaveSettings()
-	}
-
 	StatusUpdate := ProgressStatusGui
 	StatusUpdate("Training startup", buttonCtrl.Gui)
+
+	if (AUTO_SAVE) {
+		StatusUpdate("Saving settings")
+		SaveSettings(false)
+	}
+
 	try {
 		trainingSuccess := StartTraining()
 	} catch Error as e {
@@ -71,24 +73,24 @@ StartTrainingCb(buttonCtrl, *) {
 			return false
 		}
 		if (!FileExist(tessdataModelFile)) {
-			shouldCopy := YesNoConfirmation("Your new model doesn't exist in your 'tessdata' folder. Do you want me to copy it so that you will be able to use it for recognition?")
+			shouldCopy := AUTO_UPDATE_TESSDATA || YesNoConfirmation("Your new model doesn't exist in your 'tessdata' folder. Do you want me to copy it so that you will be able to use it for recognition?")
 			if (!shouldCopy) {
 				return false
 			}
 		} else if (IsFileOlder(tessdataModelFile, generatedModelFile)) {
-			shouldCopy := YesNoConfirmation("Do you want me to update existing '" MODEL_NAME "' model in your 'tessdata' folder so that you will be able to use the new one for recognition?")
+			shouldCopy := AUTO_UPDATE_TESSDATA || YesNoConfirmation("Do you want to update existing '" MODEL_NAME "' model in your 'tessdata' folder so that you will be able to use the new one for recognition?")
 		}
 
 		if (shouldCopy) {
 			try {
 				FileCopy(generatedModelFile, tessdataModelFile, true)
 			} catch Error as e {
-				if (YesNoConfirmation("Could not copy model file. Probably you don't have required privilages.`n"
+				if (YesNoConfirmation("Could not copy model file to '" tessdataModelFile "'. Probably Administrator privileges are required for the target folder.`n"
 					. "Do you want me to try again as an Administrator?")) {
 					ExecuteCommand("copy /y `"" generatedModelFile "`" `"" tessdataModelFile "`"", 3, true)
 					ExecuteCommand()
 				} else {
-					MsgBox("Error updating model file for recognition preview.`n" e.Message)
+					MsgBox("Error copying new model file to '" tessdataModelFile "'.`n" e.Message)
 					return false
 				}
 			}
@@ -97,7 +99,7 @@ StartTrainingCb(buttonCtrl, *) {
 	}
 }
 
-SaveSettings(*) {
+SaveSettings(showMessage) {
 	global
 
 	mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss any created here dialogs before interacting with the main window.
@@ -105,7 +107,10 @@ SaveSettings(*) {
 	for varableName in CONFIGURATION_VARIABLES_LIST {
 		IniWrite(%varableName%, CONFIGURATION_FILE, "General", varableName)
 	}
-	MsgBox("Settings saved")
+	
+	if (showMessage) {
+		MsgBox("Settings saved")
+	}
 }
 
 LoadSettings(*) {

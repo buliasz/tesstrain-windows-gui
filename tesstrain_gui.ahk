@@ -18,13 +18,15 @@
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
+VERSION_NUMBER := "2.1"
+
 if (!A_IsCompiled) {
 	TraySetIcon(A_ScriptDir "\icon.ico",,true)
 }
 
 CONFIGURATION_FILE := A_ScriptDir "\tesstrain_gui.ini"
 
-CONFIGURATION_VARIABLES_LIST := ["BIN_DIR", "DATA_DIR", "TESSDATA", "GROUND_TRUTH_DIR", "DEBUG_MODE", "MODEL_NAME", "OUTPUT_DIR", "WORDLIST_FILE", "NUMBERS_FILE", "PUNC_FILE", "START_MODEL", "LAST_CHECKPOINT", "PROTO_MODEL", "MAX_ITERATIONS", "DEBUG_INTERVAL", "LEARNING_RATE", "NET_SPEC", "LANG_TYPE", "NORM_MODE", "PASS_THROUGH_RECORDER", "LANG_IS_RTL", "GENERATE_BOX_SCRIPT", "PSM", "RANDOM_SEED", "RATIO_TRAIN", "TARGET_ERROR_RATE", "CREATE_BEST_TRAINEDDATA", "CREATE_FAST_TRAINEDDATA", "DELETE_BOX_FILES", "DELETE_LSTMF_FILES", "DELETE_MODEL_DIRECTORY", "AUTO_SAVE", "REQUIREMENTS_VERIFIED"]
+CONFIGURATION_VARIABLES_LIST := ["BIN_DIR", "DATA_DIR", "TESSDATA", "GROUND_TRUTH_DIR", "DEBUG_MODE", "MODEL_NAME", "OUTPUT_DIR", "WORDLIST_FILE", "NUMBERS_FILE", "PUNC_FILE", "START_MODEL", "LAST_CHECKPOINT", "PROTO_MODEL", "MAX_ITERATIONS", "DEBUG_INTERVAL", "LEARNING_RATE", "NET_SPEC", "LANG_TYPE", "NORM_MODE", "PASS_THROUGH_RECORDER", "LANG_IS_RTL", "GENERATE_BOX_SCRIPT", "PSM", "RANDOM_SEED", "RATIO_TRAIN", "TARGET_ERROR_RATE", "CREATE_BEST_TRAINEDDATA", "CREATE_FAST_TRAINEDDATA", "DELETE_BOX_FILES", "DELETE_LSTMF_FILES", "DELETE_MODEL_DIRECTORY", "AUTO_SAVE", "REQUIREMENTS_VERIFIED", "AUTO_CLEAN_OLD_DATA", "AUTO_UPDATE_TESSDATA"]
 
 CREATE_BEST_TRAINEDDATA := true
 CREATE_FAST_TRAINEDDATA := true
@@ -34,6 +36,8 @@ DELETE_MODEL_DIRECTORY := true
 AUTO_SAVE := true
 WRONG_INPUT_MAP := Map()
 REQUIREMENTS_VERIFIED := false
+AUTO_CLEAN_OLD_DATA := true
+AUTO_UPDATE_TESSDATA := false
 
 ; Start GUI
 TesstrainGui()
@@ -53,9 +57,11 @@ TesstrainGui() {
 	CreateGui()
 
 	CreateGui()	{
-		mainGui := Gui("+OwnDialogs", "Tesstrain GUI v2.0")
+		mainGui := Gui("+OwnDialogs", "Tesstrain GUI v." VERSION_NUMBER)
 
 		tabs := mainGui.Add("Tab3", , ["Main settings","Advanced"])
+
+		; Main Settings TAB
 		
 		AddFolderSelection(
 			"Tesseract executables folder",
@@ -197,7 +203,8 @@ TesstrainGui() {
 				. "(Default: 0.01)"
 		)
 
-		; Advanced tab
+		; Advanced Settings TAB
+		
 		tabs.UseTab("Advanced")
 
 		AddCheckbox(
@@ -205,6 +212,20 @@ TesstrainGui() {
 			"DEBUG_MODE",
 			"If enabled after each command executed in the system shell there will be a message showed with command output, waiting for confirmation to continue.",
 			true
+		)
+		
+		AddCheckbox(
+			"Automatically clean old training data",
+			"AUTO_CLEAN_OLD_DATA",
+			"When enabled old training data will be removed without confirmation when a new training is started",
+			false
+		)
+
+		AddCheckbox(
+			"Automatically update TessData",
+			"AUTO_UPDATE_TESSDATA",
+			"If enabled, when training finishes successfuly, TessData folder will be updated with the newly trained model without confirmation. This means the new .traineddata file will be copied to the TessData folder. If the file already exist in TessData, it will be overwritten",
+			false
 		)
 
 		AddFileSelection(
@@ -300,7 +321,7 @@ TesstrainGui() {
 		resetBtn := mainGui.Add("Button", "ys x+10 checked", "&Reload")
 		resetBtn.OnEvent("Click", (*)=>(mainGui.Destroy(), TesstrainGui()))
 		saveBtn := mainGui.Add("Button", "ys x+10 checked", "&Save settings")
-		saveBtn.OnEvent("Click", SaveSettings)
+		saveBtn.OnEvent("Click", (*)=>SaveSettings(true))
 		autosaveChb := mainGui.Add("Checkbox", "ys hp 0x20 Checked" AUTO_SAVE " vAUTO_SAVE", "Save settings &automatically on 'Start Training'")
 		autosaveChb.OnEvent("Click", SetCtrlNameGlobalToCtrlValue)
 
