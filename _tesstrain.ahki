@@ -300,13 +300,13 @@ GenerateTrainAndEvalLists() {
 }
 
 GenerateAllLstmfFiles() {
-	StatusUpdate("Generating .lstmf and .box files")
+	StatusUpdate("Generating .box and .lstmf files")
 	DirCreate(OUTPUT_DIR)
 
 	gtTxtList := FindAllFiles(GROUND_TRUTH_DIR "\*.gt.txt")
 	nameList := ArrayTransform(gtTxtList, StrCutEnd, StrLen(".gt.txt"))
 
-	ArrayForEach(nameList, GenerateLstmfFile)
+	ArrayForEach(nameList, GenerateBoxAndLstmfFile)
 	
 	lstmfFilesList := FindAllFiles(GROUND_TRUTH_DIR "\*.lstmf")
 
@@ -318,7 +318,7 @@ GenerateAllLstmfFiles() {
 	return lstmfList
 }
 
-GenerateLstmfFile(name) {
+GenerateBoxAndLstmfFile(name) {
 	imageFile := ""
 
 	for (extension in SUPPORTED_IMAGE_FILES) {
@@ -329,7 +329,7 @@ GenerateLstmfFile(name) {
 		}
 	}
 
-	if (FileExist(name ".lstmf")) {
+	if (FileExist(name ".lstmf") && !IsFileNewer(name ".box", name ".lstmf")) {
 		return
 	}
 
@@ -337,9 +337,14 @@ GenerateLstmfFile(name) {
 }
 
 GenerateBoxFileFromImage(fullImagePathWithoutExtension, imageExtension) {
-	boxFileFullPath := fullImagePathWithoutExtension ".box"
-	if (!FileExist(boxFileFullPath) || FileGetSize(boxFileFullPath) == 0) {
-		ExecuteCommand("set PYTHONIOENCODING=utf-8 && " PYTHON_EXE " " GENERATE_BOX_SCRIPT " -i `"" fullImagePathWithoutExtension imageExtension "`" -t `"" fullImagePathWithoutExtension ".gt.txt`" > `"" boxFileFullPath "`"", 2)
+	boxFileFullPath 	:= fullImagePathWithoutExtension ".box"
+	imageFileFullPath 	:= fullImagePathWithoutExtension imageExtension
+	gtTxtFileFullPath 	:= fullImagePathWithoutExtension ".gt.txt"
+	if (!FileExist(boxFileFullPath) || FileGetSize(boxFileFullPath) == 0
+		|| IsFileNewer(imageFileFullPath, boxFileFullPath)
+		|| IsFileNewer(gtTxtFileFullPath, boxFileFullPath)
+	) {
+		ExecuteCommand("set PYTHONIOENCODING=utf-8 && " PYTHON_EXE " " GENERATE_BOX_SCRIPT " -i `"" imageFileFullPath "`" -t `"" gtTxtFileFullPath "`" > `"" boxFileFullPath "`"", 2)
 	}
 }
 

@@ -199,7 +199,8 @@ TesstrainGui() {
 		AddNumberSelection(
 			"Target error rate",
 			"TARGET_ERROR_RATE",
-			"Expected final recognition error percentage. Stop training if the Character Error Rate (CER) gets below this value. It's the '--target_error_rate' argument for 'lstmtraining'.`n`n"
+			"Expected final recognition error percentage. Stop training if the Character Error Rate (CER) gets below this value. It's the '--target_error_rate' argument for 'lstmtraining'.`n"
+				. "You can set it to a negative value to disable this condition.`n`n"
 				. "(Default: 0.01)"
 		)
 
@@ -316,11 +317,11 @@ TesstrainGui() {
 
 		startBtn := mainGui.Add("Button", "default xs section +center", "Start &Training")
 		startBtn.OnEvent("Click", StartTrainingCb)
-		exitBtn := mainGui.Add("Button", "ys x+10 checked", "E&xit")
+		exitBtn := mainGui.Add("Button", "ys x+10", "E&xit")
 		exitBtn.OnEvent("Click", ExitGui)
-		resetBtn := mainGui.Add("Button", "ys x+10 checked", "&Reload")
+		resetBtn := mainGui.Add("Button", "ys x+10", "&Reload")
 		resetBtn.OnEvent("Click", (*)=>(mainGui.Destroy(), TesstrainGui()))
-		saveBtn := mainGui.Add("Button", "ys x+10 checked", "&Save settings")
+		saveBtn := mainGui.Add("Button", "ys x+10", "&Save settings")
 		saveBtn.OnEvent("Click", (*)=>SaveSettings(true))
 		autosaveChb := mainGui.Add("Checkbox", "ys hp 0x20 Checked" AUTO_SAVE " vAUTO_SAVE", "Save settings &automatically on 'Start Training'")
 		autosaveChb.OnEvent("Click", SetCtrlNameGlobalToCtrlValue)
@@ -418,7 +419,7 @@ TesstrainGui() {
 
 	AddNumberSelection(title, targetVariableName, description) {
 		mainGui.Add("Text", "section xs w" firstColumnWidth " h" rowHeight " +0x200", title)
-		guiCtrl := mainGui.Add("Edit", "ys Number w" secondColumnWidth " hp v" targetVariableName, %targetVariableName%)
+		guiCtrl := mainGui.Add("Edit", "ys w" secondColumnWidth " hp v" targetVariableName, %targetVariableName%)
 		guiCtrl.OnEvent("Change", SetCtrlNameGlobalToCtrlValue)
 		AddDescription(description, title)
 	}

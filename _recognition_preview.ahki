@@ -76,12 +76,14 @@ PreviewRecognition(btnCtrl, *) {
 		loop {
 			ShowNextImage()
 		} until imageList.Length == 0 || ocrResultCtrl.Text != gtTxtCtrl.Text
+		if (imageList.Length == 0) {
+			MsgBoxAot("No more wrong OCR")
+		}
 	}
 
 	ShowNextImage(*) {
 		if (imageList.Length == 0) {
 			MsgBoxAot("No more files")
-			; btnCtrl.Gui.Opt("-Disabled")
 			WinClose(imageGui)
 			return
 		}

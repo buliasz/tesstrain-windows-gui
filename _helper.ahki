@@ -28,6 +28,14 @@ StrRCutTo(text, cutStartStr) {
 	return SubStr(text, cutIndex + StrLen(cutStartStr))
 }
 
+StrRCutFrom(text, cutStartStr) {
+	cutIndex := InStr(text, cutStartStr,,, -1)
+	if (!cutIndex) {
+		return text
+	}
+	return SubStr(text, 1, cutIndex - 1)
+}
+
 StrEndsWith(text, ending) {
 	return SubStr(text, -StrLen(ending)) == ending
 }
@@ -159,6 +167,18 @@ FindAllFilesExtended(pattern) {
 	return filesFound
 }
 
+FindNewestFile(pattern) {
+	fileFound := ""
+	modified := ""
+	loop Files, pattern {
+		if (StrCompare(A_LoopFileTimeModified, modified) > 0) {
+			fileFound := A_LoopFileFullPath
+			modified := A_LoopFileTimeModified
+		}
+	}
+	return fileFound
+}
+
 FileGetFirstLine(filePath) {
 	return GetFileLine(filePath, 1) 
 }
@@ -187,6 +207,9 @@ IsFileOlder(file1, file2) {
 	return StrCompare(FileGetTime(file1), FileGetTime(file2)) < 0
 }
 
+IsFileNewer(file1, file2) {
+	return StrCompare(FileGetTime(file1), FileGetTime(file2)) > 0
+}
 
 ; ----------------------
 ; OTHER HELPER FUNCTIONS
@@ -218,32 +241,71 @@ OcrImageFile(imageFullPath, lang:="", tessdataDir:="") {
 }
 
 ProgressStatusGui(newStatus:="", ownerGui:="", windowTitle:="Training progress") {
-	static lastStatus := "", statusGui := "", ownedBy := ""
+	static lastStatus:="", statusGui:="", ownedBy:="", bcer:={}, generateBtn:={}
 
 	if (!newStatus && statusGui) {
+		MonitorCheckpoints(false)
 		if (ownedBy) {
 			ownedBy.Opt("-Disabled")
 		}
+		bcer := generateBtn := {}	; prevents error if there is ongoing CheckCheckpoints timer
 		statusGui.Destroy()
 		lastStatus := statusGui := ownedBy := ""
 		return
 	}
 
 	if (!statusGui) {
-		statusGui := Gui("+Resize", windowTitle)
+		statusGui := Gui("+Resize +AlwaysOnTop", windowTitle)
 		if (ownerGui) {
 			statusGui.Opt("+Owner" ownerGui.Hwnd)
 			ownerGui.Opt("+Disabled")
 			ownedBy := ownerGui
 		}
+		statusGui.Add("Text", "section xm w200", "Improved BCER")
+		bcer := statusGui.Add("Text", "ys w50", "-")
+		generateBtn := statusGui.Add("Button", "ys w150", "&Generate new model")
+		generateBtn.OnEvent("Click", GenerateTraineddata)
+		generateBtn.Enabled := false
+		MonitorCheckpoints(true)
 	}
 
 	if (lastStatus) {
 		lastStatus.Text := "Done"
 	}
-	statusGui.Add("Text", "section xm w400", newStatus)
+	statusGui.Add("Text", "section xm w360", newStatus)
 	lastStatus := statusGui.Add("Text", "ys w40", "...")
 	statusGui.Show("AutoSize")
+	
+	MonitorCheckpoints(isEnable) {
+		if (isEnable) {
+			SetTimer CheckCheckpoints, 2000
+		} else {
+			SetTimer CheckCheckpoints, 0
+		}
+	}
+	
+	CheckCheckpoints() {
+		if ((name:=FindNewestFile(OUTPUT_DIR "\checkpoints\" MODEL_NAME "_*.checkpoint")) && statusGui) {
+			bcer.Text := GetBcerFromName(name)
+			generateBtn.Enabled := true
+		}
+	}
+	
+	GenerateTraineddata(*) {
+		checkpointFile := FindNewestFile(OUTPUT_DIR "\checkpoints\" MODEL_NAME "_*.checkpoint")
+		Checkpoint2Traineddata(checkpointFile, DATA_DIR "\" MODEL_NAME ".traineddata", false)
+		if (UpdateModelFileInTessdata()) {
+			MsgBox("New model successfully generated and/or updated")
+		}
+	}
+}
+
+GetBcerFromName(name) {
+	bcer := name
+	bcer := StrRCutFrom(bcer, "_")
+	bcer := StrRCutFrom(bcer, "_")
+	bcer := StrRCutTo(bcer, "_")
+	return bcer
 }
 
 VerifyRequirements() {

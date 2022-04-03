@@ -47,6 +47,7 @@ ExecuteCommand(command:="", mode:=1, admin:=false) {
 		RunWait((admin ? "*RunAs " : "") command)
 
 		if (FileExist("twg_cmd_err")) {
+			FreeConsole()
 			FileDelete("twg_cmd_err")
 			throw Error("Command execution interrupted by user or exited with error. Details were shown in the console window.")
 		}
@@ -66,6 +67,7 @@ ExecuteCommand(command:="", mode:=1, admin:=false) {
 		errMsg := "Received exception during exeution of command: '" command "'."
 			. "`nException: " e.Message
 		extraMsg := DescribeException(e)
+		FreeConsole()
 		throw Error(errMsg, -1, extraMsg)
 	}
 	
@@ -94,6 +96,7 @@ ExecuteCommand(command:="", mode:=1, admin:=false) {
 		} else if (StdOut) {
 			errMsg .= "`n`n" StdOut
 		}
+		FreeConsole()
 		throw Error(errMsg, -1, extraMsg)
 	}
 	
