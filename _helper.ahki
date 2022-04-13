@@ -261,9 +261,9 @@ ProgressStatusGui(newStatus:="", ownerGui:="", windowTitle:="Training progress")
 			ownerGui.Opt("+Disabled")
 			ownedBy := ownerGui
 		}
-		statusGui.Add("Text", "section xm w200", "Improved BCER")
-		bcer := statusGui.Add("Text", "ys w50", "-")
-		generateBtn := statusGui.Add("Button", "ys w150", "&Generate new model")
+		statusGui.Add("Text", "section xm w115", "Best checkpoint BCER")
+		bcer := statusGui.Add("Text", "ys w45", "-")
+		generateBtn := statusGui.Add("Button", "ys w240", "&Generate model from currently best checkpoint")
 		generateBtn.OnEvent("Click", GenerateTraineddata)
 		generateBtn.Enabled := false
 		MonitorCheckpoints(true)

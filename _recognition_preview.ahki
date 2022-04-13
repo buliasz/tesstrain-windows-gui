@@ -77,7 +77,7 @@ PreviewRecognition(btnCtrl, *) {
 			ShowNextImage()
 		} until imageList.Length == 0 || ocrResultCtrl.Text != gtTxtCtrl.Text
 		if (imageList.Length == 0) {
-			MsgBoxAot("No more wrong OCR")
+			MsgBoxAot("No more wrong OCRs")
 		}
 	}
 

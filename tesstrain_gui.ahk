@@ -39,6 +39,13 @@ REQUIREMENTS_VERIFIED := false
 AUTO_CLEAN_OLD_DATA := true
 AUTO_UPDATE_TESSDATA := false
 
+VALUE_VALIDATORS := Map(
+	"TARGET_ERROR_RATE", (a)=>(IsNumber(a) && a >= 0 && a <= 100),
+	"RATIO_TRAIN", (a)=>(IsNumber(a) && a > 0 && a <1),
+	"LEARNING_RATE", (a)=>(IsNumber(a) && a > 0 && a <=1),
+	"MAX_ITERATIONS", IsInteger,
+)
+
 ; Start GUI
 TesstrainGui()
 
@@ -140,7 +147,9 @@ TesstrainGui() {
 				. "1=combine graphemes (use for Latin and other simple scripts)`n"
 				. "2=split graphemes (use for Indic/Khmer/Myanmar)`n"
 				. "3=pure unicode (use for Arabic/Hebrew/Thai/Tibetan)"
-				. "`n`nSelect 'Language Type':'Custom' to be able to modify this setting."
+				. "`n`nSelect 'Language Type':'Custom' to be able to modify this setting.",
+			1,
+			3,
 		)
 		AddCheckbox(
 			"Pass through recorder",
@@ -191,7 +200,7 @@ TesstrainGui() {
 			"RATIO_TRAIN",
 			"Ratio of train/eval training data. For example 0.9 means 90% of trainig data is used for training mechanism and the remaining 10% is used for evaluations of current training results. (Default: 0.90)"
 		)
-		AddIntegerSelection(
+		AddNumberSelection(
 			"Maximum iterations",
 			"MAX_ITERATIONS",
 			"If set, exit after this many iterations. A negative value is interpreted as epochs (number of iterations will be based on amount of training data; one Epoch is when an entire dataset is passed through the neural network once). 0 means infinite iterations (end only if 'Target error rate' condition will be met)."
@@ -199,8 +208,7 @@ TesstrainGui() {
 		AddNumberSelection(
 			"Target error rate",
 			"TARGET_ERROR_RATE",
-			"Expected final recognition error percentage. Stop training if the Character Error Rate (CER) gets below this value. It's the '--target_error_rate' argument for 'lstmtraining'.`n"
-				. "You can set it to a negative value to disable this condition.`n`n"
+			"Expected final recognition error percentage. Stop training if the Character Error Rate (CER) gets below this value. It's the '--target_error_rate' argument for 'lstmtraining'.`n`n"
 				. "(Default: 0.01)"
 		)
 
@@ -284,7 +292,7 @@ TesstrainGui() {
 			"Clean",
 			CleanModelData,
 			Map(
-				"Output Model", "DELETE_MODEL_DIRECTORY",
+				"Training output folder", "DELETE_MODEL_DIRECTORY",
 				"'.box' files", "DELETE_BOX_FILES",
 				"'.lstmf' files", "DELETE_LSTMF_FILES",
 			),
@@ -320,7 +328,7 @@ TesstrainGui() {
 		exitBtn := mainGui.Add("Button", "ys x+10", "E&xit")
 		exitBtn.OnEvent("Click", ExitGui)
 		resetBtn := mainGui.Add("Button", "ys x+10", "&Reload")
-		resetBtn.OnEvent("Click", (*)=>(mainGui.Destroy(), TesstrainGui()))
+		resetBtn.OnEvent("Click", (*)=>reload())
 		saveBtn := mainGui.Add("Button", "ys x+10", "&Save settings")
 		saveBtn.OnEvent("Click", (*)=>SaveSettings(true))
 		autosaveChb := mainGui.Add("Checkbox", "ys hp 0x20 Checked" AUTO_SAVE " vAUTO_SAVE", "Save settings &automatically on 'Start Training'")
@@ -465,7 +473,16 @@ TesstrainGui() {
 
 	SetCtrlNameGlobalToCtrlValue(ctrlObj, *) {
 		global
-		%ctrlObj.Name% := ctrlObj.Value
+		local globalName := ctrlObj.Name
+		local newValue := ctrlObj.Value
+		if (VALUE_VALIDATORS.Has(globalName) && !VALUE_VALIDATORS[globalName](newValue)) {
+			mainGui[globalName].SetFont("cRed bold")
+			WRONG_INPUT_MAP[globalName] := "Wrong value for '" globalName "'"
+			return
+		}
+		mainGui[globalName].SetFont("cDefault norm")
+		MapSafeDelete(WRONG_INPUT_MAP, globalName)
+		%globalName% := newValue
 	}
 
 	SetCtrlNameGlobalToCtrlText(guiCtrl, *) {

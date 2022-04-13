@@ -318,22 +318,22 @@ GenerateAllLstmfFiles() {
 	return lstmfList
 }
 
-GenerateBoxAndLstmfFile(name) {
+GenerateBoxAndLstmfFile(fileName) {
 	imageFile := ""
 
 	for (extension in SUPPORTED_IMAGE_FILES) {
-		if FileExist(name extension) {
-			GenerateBoxFileFromImage(name, extension)
-			imageFile := name extension
+		if FileExist(fileName extension) {
+			GenerateBoxFileFromImage(fileName, extension)
+			imageFile := fileName extension
 			break
 		}
 	}
 
-	if (FileExist(name ".lstmf") && !IsFileNewer(name ".box", name ".lstmf")) {
+	if (FileExist(fileName ".lstmf") && !IsFileNewer(fileName ".box", fileName ".lstmf")) {
 		return
 	}
 
-	ExecuteCommand("`"" BINARIES["tesseract"] "`" `"" imageFile "`" " name " --psm " PSM " lstm.train")
+	ExecuteCommand("`"" BINARIES["tesseract"] "`" `"" imageFile "`" `"" fileName "`" --psm " PSM " lstm.train")
 }
 
 GenerateBoxFileFromImage(fullImagePathWithoutExtension, imageExtension) {
