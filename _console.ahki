@@ -144,3 +144,5 @@ ExecuteCommand(command:="", mode:=1, admin:=false) {
 		hCon := cPid := ""
 	}
 }
+
+OnExit((*)=>ExecuteCommand())	; terminate console if necessary on script exit

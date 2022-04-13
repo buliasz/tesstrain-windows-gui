@@ -49,17 +49,17 @@ StartTrainingCb(buttonCtrl, *) {
 	try {
 		trainingSuccess := StartTraining()
 	} catch Error as e {
+		StatusUpdate()	; closes status and re-enables main Gui
 		MsgBox(e.Message ((DEBUG_MODE && e.HasProp("Extra")) ? "`n`n" e.Extra : ""))
 	} else {
+		StatusUpdate()	; closes status and re-enables main Gui
 		if (trainingSuccess) {
 			UpdateModelFileInTessdata()
-			MsgBox "Training finised"
+			MsgBox "Training finished"
 		} else {
-			MsgBox "Training ended with error"
+			MsgBox "Training ended with an error"
 		}
 	}
-
-	StatusUpdate()	; closes status and re-enables main Gui
 
 	return
 }

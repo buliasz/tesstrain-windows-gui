@@ -1,6 +1,6 @@
 # Tesseract train GUI for Windows
 
-> Tesseract language training Windows GUI v3.0 for Tesseract 4+. Both Windows executable and source AutoHotKey script files are provided.
+> Tesseract language training Windows GUI v3.1 for Tesseract 4+. Both Windows executable and source AutoHotKey script files are provided.
 
 ## Install
 

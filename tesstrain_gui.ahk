@@ -18,7 +18,7 @@
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
-VERSION_NUMBER := "3.0"
+VERSION_NUMBER := "3.1"
 
 if (!A_IsCompiled) {
 	TraySetIcon(A_ScriptDir "\icon.ico",,true)
