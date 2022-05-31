@@ -2,6 +2,12 @@
 
 > Tesseract language training Windows GUI v3.1 for Tesseract 4+. Both Windows executable and source AutoHotKey script files are provided.
 
+## Donate a cup of coffee
+
+<a href="https://www.buymeacoffee.com/buliasz" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+
+Please don't forget this fork is for Windows GUI implementation developed by only one developer (so far). The Tesseract and Tesstrain projects for which this GUI  is created are much larger open source projects.
+
 ## Install
 
 The GUI executable is portable. You can copy the `tesstrain_gui.exe` file to any directory and execute it.
