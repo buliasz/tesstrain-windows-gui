@@ -234,10 +234,11 @@ OcrImageFile(imageFullPath, lang:="", tessdataDir:="") {
 	if (!tessdataDir) {
 		tessdataDir := TESSDATA
 	}
+	outputFile := DATA_DIR "\preview.out"
 	ocrOutput := ExecuteCommand("`"" BINARIES["tesseract"] "`" `"" imageFullPath "`" -"
 		. (lang ? " -l " lang : "")
-		. " --psm 13 -c page_separator= --tessdata-dir `"" tessdataDir "`"")
-	return Trim(ocrOutput.StdOut, "`t`n`r ")
+		. " --psm 13 -c page_separator= --tessdata-dir `"" tessdataDir "`" >`"" outputFile "`"", 2)
+	return Trim(FileRead(outputFile), "`t`n`r ")
 }
 
 ProgressStatusGui(newStatus:="", ownerGui:="", windowTitle:="Training progress") {
