@@ -18,7 +18,7 @@
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
-VERSION_NUMBER := "3.1"
+VERSION_NUMBER := "3.4"
 
 if (!A_IsCompiled) {
 	TraySetIcon(A_ScriptDir "\icon.ico",,true)
@@ -551,6 +551,9 @@ TesstrainGui() {
 			foundFiles := FindAllFiles(BIN_DIR "\*" binaryName ".exe")
 			if (foundFiles.Length == 0) {
 				foundFiles := FindAllFiles(BIN_DIR "\*." binaryName "-master.exe")
+			}
+			if (foundFiles.Length == 0) {
+				foundFiles := FindAllFiles(BIN_DIR "\*." binaryName "-main.exe")
 			}
 			if (foundFiles.Length == 0) {
 				if (showErrors) {

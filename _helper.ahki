@@ -180,7 +180,7 @@ FindNewestFile(pattern) {
 }
 
 FileGetFirstLine(filePath) {
-	return GetFileLine(filePath, 1) 
+	return GetFileLine(filePath, 1)
 }
 
 GetFileLine(filePath, lineNumber) {
@@ -256,7 +256,7 @@ ProgressStatusGui(newStatus:="", ownerGui:="", windowTitle:="Training progress")
 	}
 
 	if (!statusGui) {
-		statusGui := Gui("+Resize +AlwaysOnTop", windowTitle)
+		statusGui := Gui("-Resize +AlwaysOnTop", windowTitle)
 		if (ownerGui) {
 			statusGui.Opt("+Owner" ownerGui.Hwnd)
 			ownerGui.Opt("+Disabled")
@@ -276,7 +276,7 @@ ProgressStatusGui(newStatus:="", ownerGui:="", windowTitle:="Training progress")
 	statusGui.Add("Text", "section xm w360", newStatus)
 	lastStatus := statusGui.Add("Text", "ys w40", "...")
 	statusGui.Show("AutoSize")
-	
+
 	MonitorCheckpoints(isEnable) {
 		if (isEnable) {
 			SetTimer CheckCheckpoints, 2000
@@ -284,14 +284,14 @@ ProgressStatusGui(newStatus:="", ownerGui:="", windowTitle:="Training progress")
 			SetTimer CheckCheckpoints, 0
 		}
 	}
-	
+
 	CheckCheckpoints() {
 		if ((name:=FindNewestFile(OUTPUT_DIR "\checkpoints\" MODEL_NAME "_*.checkpoint")) && statusGui) {
 			bcer.Text := GetBcerFromName(name)
 			generateBtn.Enabled := true
 		}
 	}
-	
+
 	GenerateTraineddata(*) {
 		checkpointFile := FindNewestFile(OUTPUT_DIR "\checkpoints\" MODEL_NAME "_*.checkpoint")
 		Checkpoint2Traineddata(checkpointFile, DATA_DIR "\" MODEL_NAME ".traineddata", false)
@@ -311,9 +311,9 @@ GetBcerFromName(name) {
 
 VerifyRequirements() {
 	ProgressStatusGui("Starting up",, "Tesstrain GUI")
-	
+
 	VerifyPythonDependencies()
-		
+
 	ProgressStatusGui()
 	return true
 }
@@ -342,7 +342,7 @@ VerifyPythonDependencies() {
 		MsgBox("Wrong Python version. Returned version: '" versionStr "'. Please install Python version 3 or above.")
 		ExitApp()
 	}
-	
+
 	ProgressStatusGui("Verifying/installing required Python modules")
 
 	try {
