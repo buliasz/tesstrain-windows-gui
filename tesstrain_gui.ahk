@@ -18,7 +18,7 @@
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
-VERSION_NUMBER := "4.1"
+VERSION_NUMBER := "4.2"
 
 if (!A_IsCompiled) {
 	TraySetIcon(A_ScriptDir "\icon.ico",,true)
@@ -71,7 +71,7 @@ TesstrainGui() {
 		tabs := mainGui.Add("Tab3", , ["Main settings","Advanced"])
 
 		; Main Settings TAB
-		
+
 		AddFolderSelection(
 			"Tesseract executables folder",
 			"BIN_DIR",
@@ -215,7 +215,7 @@ TesstrainGui() {
 		)
 
 		; Advanced Settings TAB
-		
+
 		tabs.UseTab("Advanced")
 
 		AddCheckbox(
@@ -224,7 +224,7 @@ TesstrainGui() {
 			"If enabled after each command executed in the system shell there will be a message showed with command output, waiting for confirmation to continue.",
 			true
 		)
-		
+
 		AddCheckbox(
 			"Automatically clean old training data",
 			"AUTO_CLEAN_OLD_DATA",
