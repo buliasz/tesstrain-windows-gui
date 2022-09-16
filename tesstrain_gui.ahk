@@ -18,7 +18,8 @@
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
-VERSION_NUMBER := "4.2"
+VERSION_NUMBER := "4.3"
+PROGRAM_TITLE := "Tesstrain GUI"
 
 if (!A_IsCompiled) {
 	TraySetIcon(A_ScriptDir "\icon.ico",,true)
@@ -66,7 +67,7 @@ TesstrainGui() {
 	CreateGui()
 
 	CreateGui()	{
-		mainGui := Gui("+OwnDialogs", "Tesstrain GUI v." VERSION_NUMBER)
+		mainGui := Gui("+OwnDialogs", PROGRAM_TITLE " v." VERSION_NUMBER)
 
 		tabs := mainGui.Add("Tab3", , ["Main settings","Advanced"])
 
@@ -90,7 +91,7 @@ TesstrainGui() {
 
 		modelList := GetStartModelList()
 		if (!ArrayContains(modelList, START_MODEL)) {
-			MsgBox("Couldn't find the selected 'Start model' in your 'TessData folder'. Selecting no start model.")
+			ErrorBox("Couldn't find the selected 'Start model' in your 'TessData folder'. Selecting no start model.")
 			START_MODEL := modelList[1]
 		}
 		AddDropDown(
@@ -559,13 +560,13 @@ TesstrainGui() {
 			}
 			if (foundFiles.Length == 0) {
 				if (showPrompts) {
-					MsgBox("Error: Couldn't find any '" binaryName "' executable in the selected directory.",, "Iconx")
+					ErrorBox("Error: Couldn't find any '" binaryName "' executable in the selected directory.")
 				}
 				errored := true
 				break
 			} else if (foundFiles.Length > 1) {
 				if (showPrompts) {
-					MsgBox("Error: Multiple binaries found matching criteria: '*" binaryName "*.exe':`n" ArrayJoin(foundFiles, "`n"),, "Iconx")
+					ErrorBox("Error: Multiple binaries found matching criteria: '*" binaryName "*.exe':`n" ArrayJoin(foundFiles, "`n"))
 				}
 				errored := true
 				break
@@ -597,7 +598,7 @@ TesstrainGui() {
 
 		if (FindAllFiles(newTessdataDir "\*.traineddata").Length == 0) {
 			if (showPrompts) {
-				MsgBox("The selected folder doesn't contain any .traineddata files. Please select another one.",, "Iconx")
+				ErrorBox("The selected folder doesn't contain any .traineddata files. Please select another one.")
 			}
 			mainGui["TESSDATA"].SetFont("cRed bold")
 			WRONG_INPUT_MAP["TESSDATA"] := "Wrong 'TessData folder'"
@@ -621,7 +622,9 @@ TesstrainGui() {
 			}
 		}
 		if (showPrompts) {
-			MsgBox("No line images found in your selected Ground Truth directory. Please make sure to copy line image files that would be used for training before starting the training.`nSupported formats: " ArrayJoin(SUPPORTED_IMAGE_FILES, ", "),, "Iconx")
+			ErrorBox("No line images found in your selected Ground Truth directory. "
+				. "Please make sure to copy line image files that would be used for training before starting the training.`n"
+				. "Supported formats: " ArrayJoin(SUPPORTED_IMAGE_FILES, ", "))
 		}
 		mainGui["GROUND_TRUTH_DIR"].SetFont("cRed bold")
 		WRONG_INPUT_MAP["GROUND_TRUTH_DIR"] := "No line image files in the 'Ground Truth folder'"
@@ -638,7 +641,7 @@ TesstrainGui() {
 		mainGui["START_MODEL"].Delete()
 		mainGui["START_MODEL"].Add(modelList)
 		if (!ArrayContains(modelList, START_MODEL)) {
-			MsgBox("Couldn't find the selected 'Start model' in your 'TessData folder'. Selecting no start model.")
+			ErrorBox("Couldn't find the selected 'Start model' in your 'TessData folder'. Selecting no start model.")
 			START_MODEL := modelList[1]
 		}
 		mainGui["START_MODEL"].Choose(START_MODEL)

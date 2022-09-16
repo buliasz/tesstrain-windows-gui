@@ -144,7 +144,7 @@ ExecuteCommand(command:="", mode:=1, admin:=false) {
 OnExit((*)=>ExecuteCommand())	; terminate console if necessary on script exit
 
 DebugMessage(command, stdErr, stdOut) {
-	debugMessageGui := Gui("+Resize +AlwaysOnTop", "Tesstrain GUI - Debug Mode")
+	debugMessageGui := Gui("+Resize +AlwaysOnTop", PROGRAM_TITLE " - Debug Mode")
 
 	debugMessageGui.Add("Text", "section xm w115", "Command executed:")
 	commandEdit := debugMessageGui.Add("Edit", "W600 R2 +ReadOnly")

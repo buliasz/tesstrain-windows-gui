@@ -27,7 +27,7 @@ PreviewRecognition(btnCtrl, *) {
 				return
 			}
 		} else {
-			MsgBox(message "Please execute training or select a Start Model.")
+			NotAllowedBox(message "Please execute training first or select a Start Model.")
 			return
 		}
 	}
@@ -77,13 +77,13 @@ PreviewRecognition(btnCtrl, *) {
 			ShowNextImage()
 		} until imageList.Length == 0 || ocrResultCtrl.Text != gtTxtCtrl.Text
 		if (imageList.Length == 0) {
-			MsgBoxAot("No more wrong OCRs")
+			AotBox("No more wrong OCRs")
 		}
 	}
 
 	ShowNextImage(*) {
 		if (imageList.Length == 0) {
-			MsgBoxAot("No more files")
+			AotBox("No more files")
 			WinClose(imageGui)
 			return
 		}
