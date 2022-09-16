@@ -55,6 +55,11 @@ StartTrainingCb(buttonCtrl, *) {
 		StatusUpdate()	; closes status and re-enables main Gui
 		if (trainingSuccess) {
 			UpdateModelFileInTessdata()
+			if (SHUTDOWN_AFTER_TRAINING_COMPLETION) {
+				Shutdown(9)
+				TrayTip("Shutting down...")
+				ExitApp
+			}
 			MsgBox "Training finished"
 		} else {
 			MsgBox "Training ended with an error"
@@ -74,12 +79,12 @@ UpdateModelFileInTessdata() {
 		return false
 	}
 	if (!FileExist(tessdataModelFile)) {
-		shouldCopy := AUTO_UPDATE_TESSDATA || YesNoConfirmation("Your new model doesn't exist in your 'tessdata' folder. Do you want me to copy it so that you will be able to use it for recognition?")
+		shouldCopy := AUTO_UPDATE_TESSDATA || SHUTDOWN_AFTER_TRAINING_COMPLETION || YesNoConfirmation("Your new model doesn't exist in your 'tessdata' folder. Do you want me to copy it so that you will be able to use it for recognition?")
 		if (!shouldCopy) {
 			return false
 		}
 	} else if (IsFileOlder(tessdataModelFile, generatedModelFile)) {
-		shouldCopy := AUTO_UPDATE_TESSDATA || YesNoConfirmation("Do you want to update existing '" MODEL_NAME "' model in your 'tessdata' folder so that you will be able to use the new one for recognition?")
+		shouldCopy := AUTO_UPDATE_TESSDATA || SHUTDOWN_AFTER_TRAINING_COMPLETION  || YesNoConfirmation("Do you want to update existing '" MODEL_NAME "' model in your 'tessdata' folder so that you will be able to use the new one for recognition?")
 	}
 
 	if (shouldCopy) {

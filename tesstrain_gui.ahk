@@ -18,7 +18,7 @@
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
-VERSION_NUMBER := "3.4"
+VERSION_NUMBER := "4.1"
 
 if (!A_IsCompiled) {
 	TraySetIcon(A_ScriptDir "\icon.ico",,true)
@@ -38,6 +38,8 @@ WRONG_INPUT_MAP := Map()
 REQUIREMENTS_VERIFIED := false
 AUTO_CLEAN_OLD_DATA := true
 AUTO_UPDATE_TESSDATA := false
+
+SHUTDOWN_AFTER_TRAINING_COMPLETION := false
 
 VALUE_VALIDATORS := Map(
 	"TARGET_ERROR_RATE", (a)=>(IsNumber(a) && a >= 0 && a <= 100),
@@ -540,7 +542,7 @@ TesstrainGui() {
 		UpdateValue("PROTO_MODEL", OUTPUT_DIR "\" MODEL_NAME ".traineddata")
 	}
 
-	OnBinDirChange(newBinDir, showErrors:=true) {
+	OnBinDirChange(newBinDir, showPrompts:=true) {
 		static binariesList := ["tesseract", "combine_tessdata", "unicharset_extractor", "merge_unicharsets", "lstmtraining", "combine_lang_model"]
 
 		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
@@ -556,13 +558,13 @@ TesstrainGui() {
 				foundFiles := FindAllFiles(BIN_DIR "\*." binaryName "-main.exe")
 			}
 			if (foundFiles.Length == 0) {
-				if (showErrors) {
+				if (showPrompts) {
 					MsgBox("Error: Couldn't find any '" binaryName "' executable in the selected directory.",, "Iconx")
 				}
 				errored := true
 				break
 			} else if (foundFiles.Length > 1) {
-				if (showErrors) {
+				if (showPrompts) {
 					MsgBox("Error: Multiple binaries found matching criteria: '*" binaryName "*.exe':`n" ArrayJoin(foundFiles, "`n"),, "Iconx")
 				}
 				errored := true
@@ -581,7 +583,7 @@ TesstrainGui() {
 			MapSafeDelete(WRONG_INPUT_MAP, "BIN_DIR")
 
 			newTessdataDir := newBinDir "\tessdata"
-			if (TESSDATA != newTessdataDir && DirExist(newTessdataDir)) {
+			if (showPrompts && TESSDATA != newTessdataDir && DirExist(newTessdataDir)) {
 				if (YesNoConfirmation("Found 'tessdata' subfolder inside selected executables folder. Do you want to set it as 'TessData folder'?")) {
 					UpdateValue("TESSDATA", newTessdataDir)
 					OnTessdataDirChange(newTessdataDir)
@@ -590,11 +592,11 @@ TesstrainGui() {
 		}
 	}
 
-	OnTessdataDirChange(newTessdataDir, showErrors:=true) {
+	OnTessdataDirChange(newTessdataDir, showPrompts:=true) {
 		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
 
 		if (FindAllFiles(newTessdataDir "\*.traineddata").Length == 0) {
-			if (showErrors) {
+			if (showPrompts) {
 				MsgBox("The selected folder doesn't contain any .traineddata files. Please select another one.",, "Iconx")
 			}
 			mainGui["TESSDATA"].SetFont("cRed bold")
@@ -608,7 +610,7 @@ TesstrainGui() {
 		}
 	}
 
-	OnGroundTruthDirChange(newGroundTruthDir, showErrors:=true) {
+	OnGroundTruthDirChange(newGroundTruthDir, showPrompts:=true) {
 		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
 
 		for (imageExtension in SUPPORTED_IMAGE_FILES) {
@@ -618,7 +620,7 @@ TesstrainGui() {
 				return
 			}
 		}
-		if (showErrors) {
+		if (showPrompts) {
 			MsgBox("No line images found in your selected Ground Truth directory. Please make sure to copy line image files that would be used for training before starting the training.`nSupported formats: " ArrayJoin(SUPPORTED_IMAGE_FILES, ", "),, "Iconx")
 		}
 		mainGui["GROUND_TRUTH_DIR"].SetFont("cRed bold")

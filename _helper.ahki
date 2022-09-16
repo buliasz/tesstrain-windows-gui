@@ -243,6 +243,7 @@ OcrImageFile(imageFullPath, lang:="", tessdataDir:="") {
 
 ProgressStatusGui(newStatus:="", ownerGui:="", windowTitle:="Training progress") {
 	static lastStatus:="", statusGui:="", ownedBy:="", bcer:={}, generateBtn:={}
+	global SHUTDOWN_AFTER_TRAINING_COMPLETION
 
 	if (!newStatus && statusGui) {
 		MonitorCheckpoints(false)
@@ -268,6 +269,9 @@ ProgressStatusGui(newStatus:="", ownerGui:="", windowTitle:="Training progress")
 		generateBtn.OnEvent("Click", GenerateTraineddata)
 		generateBtn.Enabled := false
 		MonitorCheckpoints(true)
+
+		shutdownChb := statusGui.Add("Checkbox", "xs hp 0x20 Checked" SHUTDOWN_AFTER_TRAINING_COMPLETION, "Shutdown computer after successfully completed (automatically updates TessData)")
+		shutdownChb.OnEvent("Click", (ctrlObj,*)=>SHUTDOWN_AFTER_TRAINING_COMPLETION:=ctrlObj.Value)
 	}
 
 	if (lastStatus) {
@@ -291,7 +295,7 @@ ProgressStatusGui(newStatus:="", ownerGui:="", windowTitle:="Training progress")
 			generateBtn.Enabled := true
 		}
 	}
-
+	
 	GenerateTraineddata(*) {
 		checkpointFile := FindNewestFile(OUTPUT_DIR "\checkpoints\" MODEL_NAME "_*.checkpoint")
 		Checkpoint2Traineddata(checkpointFile, DATA_DIR "\" MODEL_NAME ".traineddata", false)
