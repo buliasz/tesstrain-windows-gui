@@ -18,7 +18,7 @@
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
-VERSION_NUMBER := "4.3"
+VERSION_NUMBER := "4.4"
 PROGRAM_TITLE := "Tesstrain GUI"
 
 if (!A_IsCompiled) {

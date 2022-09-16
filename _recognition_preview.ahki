@@ -16,6 +16,7 @@ PreviewRecognition(btnCtrl, *) {
 	col2Width := 600
 	tessdataDirForOcr := DATA_DIR
 	modelNameForOcr := MODEL_NAME
+	ignoreSpaces := false
 
 	if (!CheckGeneratedModelExistence()) {
 		message := "There is no newly generated model of name '" MODEL_NAME "' inside the '" DATA_DIR "' folder.`n"
@@ -44,12 +45,12 @@ PreviewRecognition(btnCtrl, *) {
 	pathCtrl := imageGui.Add("Text", "ys w" col2Width " vImagePath", " ")
 
 	imageGui.Add("Text", "section xm w" col1Width, "Recongized value:")
-	ocrResultCtrl := imageGui.Add("Text", "ys h30 w" col2Width " vOcrResult", " ")
+	ocrResultCtrl := imageGui.Add("Text", "ys h60 w" col2Width " vOcrResult", " ")
 	ocrResultCtrl.SetFont("cBlue s15 w666")
 
 	imageGui.Add("Text", "section xm h35 w" col1Width, "Value from .gt.txt file:")
-	gtTxtCtrl := imageGui.Add("Text", "ys h30 w" col2Width " vGtTxtValue", " ")
-	gtTxtCtrl.SetFont("cRed s15 w666")
+	gtTxtCtrl := imageGui.Add("Text", "ys h60 w" col2Width " vGtTxtValue", " ")
+	gtTxtCtrl.SetFont("cBlue s15 w666")
 
 	skipBtn := imageGui.Add("Button", "xm section default", "&Next")
 	skipBtn.OnEvent("Click", ShowNextImage)
@@ -60,6 +61,9 @@ PreviewRecognition(btnCtrl, *) {
 	exitBtn := imageGui.Add("Button", "ys", "&Close")
 	exitBtn.OnEvent("Click", CloseCb)
 	picCtrl := imageGui.Add("Pic", "xm")
+	
+	ignoreSpacesCtrl := imageGui.Add("Checkbox", "ys hp 0x20 Checked" ignoreSpaces, "Ignore space characters")
+	ignoreSpacesCtrl.OnEvent("Click", (ctrlObj,*)=>ignoreSpaces:=ctrlObj.Value)
 
 	imageGui.Title := "Image tests"
 	imageGui.Show("xCenter AutoSize")  ; Resize the window to match the picture size.
@@ -75,10 +79,18 @@ PreviewRecognition(btnCtrl, *) {
 	ShowNextWrong(*) {
 		loop {
 			ShowNextImage()
-		} until imageList.Length == 0 || ocrResultCtrl.Text != gtTxtCtrl.Text
+		} until imageList.Length == 0 || !CompareResults(ocrResultCtrl.Text, gtTxtCtrl.Text)
 		if (imageList.Length == 0) {
 			AotBox("No more wrong OCRs")
 		}
+	}
+	
+	CompareResults(ocrResult, gtTxtValue) {
+		if (ignoreSpaces) {
+			ocrResult := StrReplace(ocrResult, " ")
+			gtTxtValue := StrReplace(gtTxtValue, " ")
+		}
+		return ocrResult == gtTxtValue
 	}
 
 	ShowNextImage(*) {
@@ -87,8 +99,10 @@ PreviewRecognition(btnCtrl, *) {
 			WinClose(imageGui)
 			return
 		}
+		imageGui.Opt("+Disabled")
 		imageFullPath := imageList.Pop().path
 		pathCtrl.Text := imageFullPath
+		ocrResultCtrl.SetFont("cGray")
 		ocrResultCtrl.Text := "..."
 		gtTxtPath := RemoveImageExtension(imageFullPath) ".gt.txt"
 		if (FileExist(gtTxtPath)) {
@@ -102,6 +116,8 @@ PreviewRecognition(btnCtrl, *) {
 
 		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr)
 		ocrResultCtrl.Text := recognizedValue
+		ocrResultCtrl.SetFont(CompareResults(recognizedValue, gtTxtCtrl.Text) ? "cGreen" : "cRed")
+		imageGui.Opt("-Disabled")
 	}
 
 	CloseCb(*) {
