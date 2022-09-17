@@ -155,6 +155,9 @@ PreviewRecognition(btnCtrl, *) {
 	}
 	
 	ReplaceControl(controlToReplace, newControl) {
+		if (closeRequest) {
+			return
+		}
 		controlToReplace.GetPos(&x, &y, &w, &h)
 		controlToReplace.Visible := false
 		newControl.Visible := true
