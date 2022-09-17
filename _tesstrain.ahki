@@ -135,6 +135,10 @@ StartTraining() {
 			return false
 		}
 	}
+	if (BEEP_END_TRAINING) {
+		SoundBeep 500, 150
+		SoundBeep 800, 300
+	}
 	Checkpoint2Traineddata(LAST_CHECKPOINT, DATA_DIR "\" MODEL_NAME ".traineddata", false)
 	StatusUpdate("Training finished")
 	return true
