@@ -9,14 +9,20 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-; Allows preview recognition after training is done
+; Allows preview of OCR recognition after training is done
 
 PreviewRecognition(btnCtrl, *) {
-	col1Width := 200
-	col2Width := 600
+	static stopSearch:=false
+
+	closeRequest := false
+	ocrInProgress := false
+
+	col1Width := 120
+	col2Width := 680
 	tessdataDirForOcr := DATA_DIR
 	modelNameForOcr := MODEL_NAME
 	ignoreSpaces := false
+	recognizedValue := expectedValue := ""
 
 	if (!CheckGeneratedModelExistence()) {
 		message := "There is no newly generated model of name '" MODEL_NAME "' inside the '" DATA_DIR "' folder.`n"
@@ -33,58 +39,133 @@ PreviewRecognition(btnCtrl, *) {
 		}
 	}
 
-	imageGui := Gui("+Resize -DPIScale +Owner" btnCtrl.Gui.Hwnd, "Trained Image")
 	imageList := []
 	for fileExtension in SUPPORTED_IMAGE_FILES {
 		ArrayPushAll(FindAllFilesExtended(GROUND_TRUTH_DIR "\*" fileExtension), imageList)
 	}
-	
+
+	if (imageList.Length == 0) {
+		NotAllowedBox("No supported images found in your Ground Truth directory")
+		return
+	}
+
 	imageList := ArraySort(imageList, (a,b)=>a.modified-b.modified) 	; Sort by modificaton date descending
+	imageListPosition := 1
 
-	imageGui.Add("Text", "section xm w" col1Width, "Processed image:")
-	pathCtrl := imageGui.Add("Text", "ys w" col2Width " vImagePath", " ")
+	; Create GUI
 
-	imageGui.Add("Text", "section xm w" col1Width, "Recongized value:")
-	ocrResultCtrl := imageGui.Add("Text", "ys h60 w" col2Width " vOcrResult", " ")
-	ocrResultCtrl.SetFont("cBlue s15 w666")
+	previewGui := Gui("-Resize -DPIScale +Owner" btnCtrl.Gui.Hwnd, "Trained Image")
 
-	imageGui.Add("Text", "section xm h35 w" col1Width, "Value from .gt.txt file:")
-	gtTxtCtrl := imageGui.Add("Text", "ys h60 w" col2Width " vGtTxtValue", " ")
-	gtTxtCtrl.SetFont("cBlue s15 w666")
+	imageFullPath := imageList[imageListPosition].path
+	previewGui.Add("Text", "section xm w" col1Width, "Processed image:")
+	imagePathCtrl := previewGui.Add("Edit", "ys w" col2Width " r1 +ReadOnly vImagePath", imageFullPath)
 
-	skipBtn := imageGui.Add("Button", "xm section default", "&Next")
-	skipBtn.OnEvent("Click", ShowNextImage)
+	ocrResultLabelCtrl := previewGui.Add("Text", "section xm w" col1Width, "Recongized value:")
+	previewGui.SetFont("s15 w678 cGreen")
+	ocrResultCtrl := previewGui.Add("Edit", "ys w" col2Width " r2 +ReadOnly vOcrResult", "")
+	previewGui.SetFont()
 
-	skipBtn := imageGui.Add("Button", "ys", "Find next &Wrong OCR")
-	skipBtn.OnEvent("Click", ShowNextWrong)
+	gtTxtLabelCtrl := previewGui.Add("Text", "section xm h35 w" col1Width, "Value from .gt.txt file:")
+	previewGui.SetFont("cBlue s15 w678")
+	gtTxtCtrl := previewGui.Add("Edit", "ys w" col2Width " r2 +ReadOnly vGtTxtValue", "")
+	previewGui.SetFont()
 
-	exitBtn := imageGui.Add("Button", "ys", "&Close")
-	exitBtn.OnEvent("Click", CloseCb)
-	picCtrl := imageGui.Add("Pic", "xm")
-	
-	ignoreSpacesCtrl := imageGui.Add("Checkbox", "ys hp 0x20 Checked" ignoreSpaces, "Ignore space characters")
+	previousButton := previewGui.Add("Button", "xm section default Disabled" (imageListPosition == 1), "&Previous")
+	previousButton.OnEvent("Click", ShowPreviousImage)
+
+	nextButton := previewGui.Add("Button", "ys Disabled" (imageListPosition == imageList.Length), "&Next")
+	nextButton.OnEvent("Click", ShowNextImage)
+
+	searchWrongButton := previewGui.Add("Button", "ys", "Find next &Wrong OCR")
+	searchWrongButton.OnEvent("Click", FindNextWrongOcr)
+
+	stopSearchButton := previewGui.Add("Button", "xp yp Hidden", "&Stop searching")
+	stopSearchButton.OnEvent("Click", StopSearchCallback)
+
+	closeButton := previewGui.Add("Button", "ys", "&Close")
+	closeButton.OnEvent("Click", CloseCb)
+
+	ignoreSpacesCtrl := previewGui.Add("Checkbox", "ys hp 0x20 Checked" ignoreSpaces, "Ignore space characters difference")
 	ignoreSpacesCtrl.OnEvent("Click", (ctrlObj,*)=>ignoreSpaces:=ctrlObj.Value)
 
-	imageGui.Title := "Image tests"
-	imageGui.Show("xCenter AutoSize")  ; Resize the window to match the picture size.
-	imageGui.OnEvent("Close", CloseCb)
-	imageGui.OnEvent("Escape", CloseCb)
+	picCtrl := previewGui.Add("Picture", "xm w" (col1Width + col2Width) " h-1", imageFullPath)
+
+	progressStatus := previewGui.Add("StatusBar",, "Preview OCR for image 1 / " imageList.Length)
+	previewGui.Title := PROGRAM_TITLE " - Ground Truth Preview"
+
+	previewGui.Show("AutoSize")  ; Resize the window to match the picture size.
+	previewGui.OnEvent("Close", CloseCb)
+	previewGui.OnEvent("Escape", CloseCb)
 	btnCtrl.Gui.Opt("+Disabled")
+	RefreshGui()
 
-	ShowNextImage()
-	WinWaitClose(imageGui)
-
-	return
-
-	ShowNextWrong(*) {
-		loop {
-			ShowNextImage()
-		} until imageList.Length == 0 || !CompareResults(ocrResultCtrl.Text, gtTxtCtrl.Text)
-		if (imageList.Length == 0) {
-			AotBox("No more wrong OCRs")
+	GetGtTxtContent() {
+		gtTxtPath := RemoveImageExtension(imageFullPath) ".gt.txt"
+		if (FileExist(gtTxtPath)) {
+			return FileGetFirstLine(gtTxtPath)
+		} else {
+			return "<no .gt.txt file>"
 		}
 	}
+
+	RefreshGui() {
+		if (closeRequest) {
+			return
+		}
+		ocrInProgress := true
+
+		imageFullPath := imageList[imageListPosition].path
+		imagePathCtrl.Text := imageFullPath
+
+		expectedValue := GetGtTxtContent()
+		gtTxtCtrl.Text := expectedValue
+
+		nextButton.Enabled := (imageListPosition < imageList.Length)
+		previousButton.Enabled := (imageListPosition > 1)
+
+		picCtrl.Value := "*w" (col1Width + col2Width) " *h-1 " imageFullPath  ; Load the image.
+
+		progressStatus.SetText("Preview OCR for image " imageListPosition " / " imageList.Length)
+
+		previewGui.Show("AutoSize")  ; Resize the window to match the picture size.
+
+		imagePathCtrl.Focus()
+
+		ocrResultCtrl.SetFont("norm cBlack")
+		ocrResultCtrl.Text := "...recognizing..."
+		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr)
+		ocrResultCtrl.SetFont("bold " (CompareResults(recognizedValue, expectedValue) ? "cGreen" : "cRed"))
+		ocrResultCtrl.Text := recognizedValue
+
+		ocrInProgress := false
+		if (closeRequest) {
+			CloseCb()
+		}
+	}
+
+	FindNextWrongOcr(searchCtrl, *) {
+		ReplaceControl(searchWrongButton, stopSearchButton)
+		loop {
+			ShowNextImage()
+		} until stopSearch || closeRequest || imageListPosition == imageList.Length || !CompareResults(recognizedValue, expectedValue)
+		if (imageListPosition == imageList.Length) {
+			AotBox("No more images")
+		}
+		stopSearch := false
+	}
 	
+	ReplaceControl(controlToReplace, newControl) {
+		controlToReplace.GetPos(&x, &y, &w, &h)
+		controlToReplace.Visible := false
+		newControl.Visible := true
+		newControl.Move(x, y, w, h)
+	}
+	
+	StopSearchCallback(stopCtrl, *) {
+		stopSearch := true
+		ReplaceControl(stopSearchButton, searchWrongButton)
+	}
+
 	CompareResults(ocrResult, gtTxtValue) {
 		if (ignoreSpaces) {
 			ocrResult := StrReplace(ocrResult, " ")
@@ -93,36 +174,31 @@ PreviewRecognition(btnCtrl, *) {
 		return ocrResult == gtTxtValue
 	}
 
-	ShowNextImage(*) {
-		if (imageList.Length == 0) {
-			AotBox("No more files")
-			WinClose(imageGui)
+	ShowPreviousImage(*) {
+		if (imageListPosition == 1) {
+			NotAllowedBox("Already at first one")
 			return
 		}
-		imageGui.Opt("+Disabled")
-		imageFullPath := imageList.Pop().path
-		pathCtrl.Text := imageFullPath
-		ocrResultCtrl.SetFont("cGray")
-		ocrResultCtrl.Text := "..."
-		gtTxtPath := RemoveImageExtension(imageFullPath) ".gt.txt"
-		if (FileExist(gtTxtPath)) {
-			gtTxtCtrl.Text := FileGetFirstLine(gtTxtPath)
-		} else {
-			gtTxtCtrl.Text := "<none>"
+		imageListPosition -= 1
+		RefreshGui()
+	}
+
+	ShowNextImage(*) {
+		if (imageListPosition == imageList.Length) {
+			NotAllowedBox("No more files")
+			return
 		}
-		picCtrl.Value := "*w" (col1Width + col2Width) " *h-1 " imageFullPath  ; Load the image.
-
-		imageGui.Show("xCenter AutoSize")  ; Resize the window to match the picture size.
-
-		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr)
-		ocrResultCtrl.Text := recognizedValue
-		ocrResultCtrl.SetFont(CompareResults(recognizedValue, gtTxtCtrl.Text) ? "cGreen" : "cRed")
-		imageGui.Opt("-Disabled")
+		imageListPosition += 1
+		RefreshGui()
 	}
 
 	CloseCb(*) {
+		if (ocrInProgress) {
+			closeRequest := true
+			return
+		}
 		btnCtrl.Gui.Opt("-Disabled")
-		imageGui.Destroy()
+		previewGui.Destroy()
 	}
 
 	CheckGeneratedModelExistence() {
