@@ -12,7 +12,7 @@
 ; Allows preview of OCR recognition after training is done
 
 PreviewRecognition(btnCtrl, *) {
-	static stopSearch:=false
+	static searchEnabled:=false
 
 	closeRequest := false
 	ocrInProgress := false
@@ -120,8 +120,10 @@ PreviewRecognition(btnCtrl, *) {
 		expectedValue := GetGtTxtContent()
 		gtTxtCtrl.Text := expectedValue
 
-		nextButton.Enabled := (imageListPosition < imageList.Length)
-		previousButton.Enabled := (imageListPosition > 1)
+		if (!searchEnabled) {
+			nextButton.Enabled := (imageListPosition < imageList.Length)
+			previousButton.Enabled := (imageListPosition > 1)
+		}
 
 		picCtrl.Value := "*w" (col1Width + col2Width) " *h-1 " imageFullPath  ; Load the image.
 
@@ -145,13 +147,22 @@ PreviewRecognition(btnCtrl, *) {
 
 	FindNextWrongOcr(searchCtrl, *) {
 		ReplaceControl(searchWrongButton, stopSearchButton)
+		previousButton.Enabled := false
+		nextButton.Enabled := false
+
+		searchEnabled := true
 		loop {
 			ShowNextImage()
-		} until stopSearch || closeRequest || imageListPosition == imageList.Length || !CompareResults(recognizedValue, expectedValue)
+		} until !searchEnabled || closeRequest || imageListPosition == imageList.Length || !CompareResults(recognizedValue, expectedValue)
 		if (imageListPosition == imageList.Length) {
 			AotBox("No more images")
 		}
-		stopSearch := false
+
+		if (!closeRequest) {
+			ReplaceControl(stopSearchButton, searchWrongButton)
+			previousButton.Enabled := true
+			nextButton.Enabled := true
+		}
 	}
 	
 	ReplaceControl(controlToReplace, newControl) {
@@ -165,8 +176,7 @@ PreviewRecognition(btnCtrl, *) {
 	}
 	
 	StopSearchCallback(stopCtrl, *) {
-		stopSearch := true
-		ReplaceControl(stopSearchButton, searchWrongButton)
+		searchEnabled := false
 	}
 
 	CompareResults(ocrResult, gtTxtValue) {
