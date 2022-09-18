@@ -241,27 +241,27 @@ OcrImageFile(imageFullPath, lang:="", tessdataDir:="") {
 	return Trim(FileRead(outputFile), "`t`n`r ")
 }
 
-ProgressStatusGui(newStatus:="", ownerGui:="", windowTitle:="Training progress") {
-	static lastStatus:="", statusGui:="", ownedBy:="", bcer:={}, generateBtn:={}
+ProgressStatusGui(newStatus:="", parentGui:="", windowTitle:="Training progress") {
+	static lastStatus:="", statusGui:="", savedParentGui:="", bcer:={}, generateBtn:={}
 	global SHUTDOWN_AFTER_TRAINING_COMPLETION
 
+	; Remove StatusGui if empty arguments
 	if (!newStatus && statusGui) {
 		MonitorCheckpoints(false)
-		if (ownedBy) {
-			ownedBy.Opt("-Disabled")
+		if (savedParentGui) {
+			savedParentGui.Show()
 		}
-		bcer := generateBtn := {}	; prevents error if there is ongoing CheckCheckpoints timer
+		bcer := generateBtn := {}	; prevents error if there is an ongoing CheckCheckpoints timer
 		statusGui.Destroy()
-		lastStatus := statusGui := ownedBy := ""
+		lastStatus := statusGui := savedParentGui := ""
 		return
 	}
 
 	if (!statusGui) {
-		statusGui := Gui("-Resize +AlwaysOnTop", windowTitle)
-		if (ownerGui) {
-			statusGui.Opt("+Owner" ownerGui.Hwnd)
-			ownerGui.Opt("+Disabled")
-			ownedBy := ownerGui
+		statusGui := Gui("-Resize +AlwaysOnTop -SysMenu", windowTitle)
+		if (parentGui) {
+			parentGui.Hide()
+			savedParentGui := parentGui
 		}
 		statusGui.Add("Text", "section xm w115", "Best checkpoint BCER")
 		bcer := statusGui.Add("Text", "ys w45", "-")
@@ -280,6 +280,8 @@ ProgressStatusGui(newStatus:="", ownerGui:="", windowTitle:="Training progress")
 	statusGui.Add("Text", "section xm w360", newStatus)
 	lastStatus := statusGui.Add("Text", "ys w40", "...")
 	statusGui.Show("AutoSize")
+	
+	return
 
 	MonitorCheckpoints(isEnable) {
 		if (isEnable) {

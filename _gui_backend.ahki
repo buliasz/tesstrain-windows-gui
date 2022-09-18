@@ -25,6 +25,9 @@ StartTrainingCb(buttonCtrl, *) {
 		return
 	}
 
+	StatusUpdate := ProgressStatusGui
+	StatusUpdate("Training startup", buttonCtrl.Gui)
+
 	outputDataExists := FileExist(OUTPUT_DIR "\unicharset")
 
 	if (outputDataExists) {
@@ -38,9 +41,6 @@ StartTrainingCb(buttonCtrl, *) {
 		VerifyGtTxtFiles(buttonCtrl.Gui)
 	}
 
-	StatusUpdate := ProgressStatusGui
-	StatusUpdate("Training startup", buttonCtrl.Gui)
-
 	if (AUTO_SAVE) {
 		StatusUpdate("Saving settings")
 		SaveSettings(false)
@@ -50,7 +50,11 @@ StartTrainingCb(buttonCtrl, *) {
 		trainingSuccess := StartTraining()
 	} catch Error as e {
 		StatusUpdate()	; closes status and re-enables main Gui
-		ErrorBox(e.Message ((DEBUG_MODE && e.HasProp("Extra")) ? "`n`n" e.Extra : ""))
+		ErrorBox(
+			e.Message 
+			. "`n`nIf checkpoint files were created during the process you can use the 'Generate' button to generate '.traineddata' files."
+			. ((DEBUG_MODE && e.HasProp("Extra")) ? "`n`n" e.Extra : "")
+		)
 	} else {
 		SoundPlay "*-1"
 		StatusUpdate()	; closes status and re-enables main Gui

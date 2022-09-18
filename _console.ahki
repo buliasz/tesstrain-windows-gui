@@ -49,7 +49,7 @@ ExecuteCommand(command:="", mode:=1, admin:=false) {
 		if (FileExist("twg_cmd_err")) {
 			FreeConsole()
 			FileDelete("twg_cmd_err")
-			throw Error("Command execution interrupted by user or exited with error. Details were shown in the console window.")
+			throw Error("Command execution was interrupted by a user or exited with an error. Details were shown in the console window.")
 		}
 
 		return
