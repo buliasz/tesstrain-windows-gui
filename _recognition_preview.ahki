@@ -12,10 +12,9 @@
 ; Allows preview of OCR recognition after training is done
 
 PreviewRecognition(btnCtrl, *) {
-	static searchEnabled:=false
-
 	closeRequest := false
 	ocrInProgress := false
+	searchEnabled:=false
 
 	col1Width := 120
 	col2Width := 680
@@ -157,8 +156,11 @@ PreviewRecognition(btnCtrl, *) {
 		if (imageListPosition == imageList.Length) {
 			AotBox("No more images")
 		}
+		searchEnabled := false
 
-		if (!closeRequest) {
+		if (closeRequest) {
+			CloseCb()
+		} else {
 			ReplaceControl(stopSearchButton, searchWrongButton)
 			previousButton.Enabled := true
 			nextButton.Enabled := true
@@ -206,7 +208,8 @@ PreviewRecognition(btnCtrl, *) {
 	}
 
 	CloseCb(*) {
-		if (ocrInProgress) {
+		closeButton.Enabled := false
+		if (searchEnabled || ocrInProgress) {
 			closeRequest := true
 			return
 		}
