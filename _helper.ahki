@@ -237,7 +237,7 @@ OcrImageFile(imageFullPath, lang:="", tessdataDir:="") {
 	outputFile := DATA_DIR "\preview.out"
 	ocrOutput := ExecuteCommand("`"" BINARIES["tesseract"] "`" `"" imageFullPath "`" -"
 		. (lang ? " -l " lang : "")
-		. " --psm 13 -c page_separator= --tessdata-dir `"" tessdataDir "`" >`"" outputFile "`"", 2)
+		. " --psm " PSM " -c page_separator= --tessdata-dir `"" tessdataDir "`" >`"" outputFile "`"", 2)
 	return Trim(FileRead(outputFile), "`t`n`r ")
 }
 
