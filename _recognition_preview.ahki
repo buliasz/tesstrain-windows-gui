@@ -21,6 +21,7 @@ PreviewRecognition(btnCtrl, *) {
 	tessdataDirForOcr := DATA_DIR
 	modelNameForOcr := MODEL_NAME
 	ignoreSpaces := false
+	preserveSpaces := false
 	recognizedValue := expectedValue := ""
 
 	if (!CheckGeneratedModelExistence()) {
@@ -84,8 +85,11 @@ PreviewRecognition(btnCtrl, *) {
 	closeButton := previewGui.Add("Button", "ys", "&Close")
 	closeButton.OnEvent("Click", CloseCb)
 
-	ignoreSpacesCtrl := previewGui.Add("Checkbox", "ys hp 0x20 Checked" ignoreSpaces, "Preserve interword spaces")
-	ignoreSpacesCtrl.OnEvent("Click", PreserveInterwordSpaces)
+	preserveSpacesCtrl := previewGui.Add("Checkbox", "ys Checked" preserveSpaces, "Preserve inter-word spaces")
+	preserveSpacesCtrl.OnEvent("Click", PreserveInterwordSpaces)
+
+	ignoreSpacesCtrl := previewGui.Add("Checkbox", "xp Checked" ignoreSpaces, "Ignore spaces")
+	ignoreSpacesCtrl.OnEvent("Click", (ctrlObj,*)=>(RefreshGui(),ignoreSpaces:=ctrlObj.Value))
 
 	picCtrl := previewGui.Add("Picture", "xm w" (col1Width + col2Width) " h-1", imageFullPath)
 
@@ -134,7 +138,7 @@ PreviewRecognition(btnCtrl, *) {
 
 		ocrResultCtrl.SetFont("norm cBlack")
 		ocrResultCtrl.Text := "...recognizing..."
-		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr, ignoreSpaces)
+		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr, preserveSpaces)
 		ocrResultCtrl.SetFont("bold " (CompareResults(recognizedValue, expectedValue) ? "cGreen" : "cRed"))
 		ocrResultCtrl.Text := recognizedValue
 
@@ -182,7 +186,7 @@ PreviewRecognition(btnCtrl, *) {
 	}
 
 	PreserveInterwordSpaces(ctrlObj, *) {
-		ignoreSpaces := ctrlObj.Value
+		preserveSpaces := ctrlObj.Value
 		RefreshGui()
 	}
 
