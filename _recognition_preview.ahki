@@ -84,8 +84,8 @@ PreviewRecognition(btnCtrl, *) {
 	closeButton := previewGui.Add("Button", "ys", "&Close")
 	closeButton.OnEvent("Click", CloseCb)
 
-	ignoreSpacesCtrl := previewGui.Add("Checkbox", "ys hp 0x20 Checked" ignoreSpaces, "Ignore space characters difference")
-	ignoreSpacesCtrl.OnEvent("Click", (ctrlObj,*)=>ignoreSpaces:=ctrlObj.Value)
+	ignoreSpacesCtrl := previewGui.Add("Checkbox", "ys hp 0x20 Checked" ignoreSpaces, "Preserve interword spaces")
+	ignoreSpacesCtrl.OnEvent("Click", PreserveInterwordSpaces)
 
 	picCtrl := previewGui.Add("Picture", "xm w" (col1Width + col2Width) " h-1", imageFullPath)
 
@@ -134,7 +134,7 @@ PreviewRecognition(btnCtrl, *) {
 
 		ocrResultCtrl.SetFont("norm cBlack")
 		ocrResultCtrl.Text := "...recognizing..."
-		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr)
+		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr, ignoreSpaces)
 		ocrResultCtrl.SetFont("bold " (CompareResults(recognizedValue, expectedValue) ? "cGreen" : "cRed"))
 		ocrResultCtrl.Text := recognizedValue
 
@@ -179,6 +179,11 @@ PreviewRecognition(btnCtrl, *) {
 	
 	StopSearchCallback(stopCtrl, *) {
 		searchEnabled := false
+	}
+
+	PreserveInterwordSpaces(ctrlObj, *) {
+		ignoreSpaces := ctrlObj.Value
+		RefreshGui()
 	}
 
 	CompareResults(ocrResult, gtTxtValue) {
