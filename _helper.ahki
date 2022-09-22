@@ -1,4 +1,4 @@
-﻿; (C) Copyright 2021, Bartlomiej Uliasz
+; (C) Copyright 2021, Bartlomiej Uliasz
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
 ; You may obtain a copy of the License at
@@ -230,14 +230,14 @@ CmdLogAppend(text) {
 	FileAppend text, "command.log"
 }
 
-OcrImageFile(imageFullPath, lang:="", tessdataDir:="") {
+OcrImageFile(imageFullPath, lang:="", tessdataDir:="", pis:=0) {
 	if (!tessdataDir) {
 		tessdataDir := TESSDATA
 	}
 	outputFile := DATA_DIR "\preview.out"
 	ocrOutput := ExecuteCommand("`"" BINARIES["tesseract"] "`" `"" imageFullPath "`" -"
 		. (lang ? " -l " lang : "")
-		. " --psm " PSM " -c page_separator= --tessdata-dir `"" tessdataDir "`" >`"" outputFile "`"", 2)
+		. " --psm " PSM " -c preserve_interword_spaces=" pis " -c page_separator= --tessdata-dir `"" tessdataDir "`" >`"" outputFile "`"", 2)
 	return Trim(FileRead(outputFile), "`t`n`r ")
 }
 
