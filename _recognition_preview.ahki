@@ -86,10 +86,10 @@ PreviewRecognition(btnCtrl, *) {
 	closeButton.OnEvent("Click", CloseCb)
 
 	preserveSpacesCtrl := previewGui.Add("Checkbox", "ys Checked" preserveSpaces, "Preserve inter-word spaces")
-	preserveSpacesCtrl.OnEvent("Click", PreserveInterwordSpaces)
+	preserveSpacesCtrl.OnEvent("Click", (ctrlObj, *)=>(preserveSpaces:=ctrlObj.Value, RefreshGui()))
 
 	ignoreSpacesCtrl := previewGui.Add("Checkbox", "xp Checked" ignoreSpaces, "Ignore spaces")
-	ignoreSpacesCtrl.OnEvent("Click", (ctrlObj,*)=>(RefreshGui(),ignoreSpaces:=ctrlObj.Value))
+	ignoreSpacesCtrl.OnEvent("Click", (ctrlObj,*)=>(ignoreSpaces:=ctrlObj.Value, preserveSpacesCtrl.Enabled:=!ignoreSpaces, RefreshGui()))
 
 	picCtrl := previewGui.Add("Picture", "xm w" (col1Width + col2Width) " h-1", imageFullPath)
 
@@ -170,7 +170,7 @@ PreviewRecognition(btnCtrl, *) {
 			nextButton.Enabled := true
 		}
 	}
-	
+
 	ReplaceControl(controlToReplace, newControl) {
 		if (closeRequest) {
 			return
@@ -180,14 +180,9 @@ PreviewRecognition(btnCtrl, *) {
 		newControl.Visible := true
 		newControl.Move(x, y, w, h)
 	}
-	
+
 	StopSearchCallback(stopCtrl, *) {
 		searchEnabled := false
-	}
-
-	PreserveInterwordSpaces(ctrlObj, *) {
-		preserveSpaces := ctrlObj.Value
-		RefreshGui()
 	}
 
 	CompareResults(ocrResult, gtTxtValue) {
