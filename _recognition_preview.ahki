@@ -23,6 +23,7 @@ PreviewRecognition(btnCtrl, *) {
 	ignoreSpaces := false
 	preserveSpaces := false
 	recognizedValue := expectedValue := ""
+	previewPsm := PSM
 
 	if (!CheckGeneratedModelExistence()) {
 		message := "There is no newly generated model of name '" MODEL_NAME "' inside the '" DATA_DIR "' folder.`n"
@@ -85,6 +86,11 @@ PreviewRecognition(btnCtrl, *) {
 	closeButton := previewGui.Add("Button", "ys", "&Close")
 	closeButton.OnEvent("Click", CloseCb)
 
+	previewGui.Add("Text", "ys hp +0x200", "PSM")
+	psmInputCtrl := previewGui.Add("Edit", "ys w50 Number")
+	psmInputCtrl.OnEvent("Change", PsmChange)
+	previewGui.Add("UpDown", "Range1-13", previewPsm)
+
 	preserveSpacesCtrl := previewGui.Add("Checkbox", "ys Checked" preserveSpaces, "Preserve inter-word spaces")
 	preserveSpacesCtrl.OnEvent("Click", (ctrlObj, *)=>(preserveSpaces:=ctrlObj.Value, RefreshGui()))
 
@@ -138,7 +144,7 @@ PreviewRecognition(btnCtrl, *) {
 
 		ocrResultCtrl.SetFont("norm cBlack")
 		ocrResultCtrl.Text := "...recognizing..."
-		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr, preserveSpaces)
+		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr, preserveSpaces, previewPsm)
 		ocrResultCtrl.SetFont("bold " (CompareResults(recognizedValue, expectedValue) ? "cGreen" : "cRed"))
 		ocrResultCtrl.Text := recognizedValue
 
@@ -224,5 +230,17 @@ PreviewRecognition(btnCtrl, *) {
 	CheckGeneratedModelExistence() {
 		generatedModelFile := DATA_DIR "\" MODEL_NAME ".traineddata"
 		return FileExist(generatedModelFile)
+	}
+	
+	PsmChange(ctrlObj, *) {
+		previewPsm := ctrlObj.Value
+		if (previewPsm > 13) {
+			previewPsm := 13
+			ctrlObj.Value := previewPsm
+		} else if (previewPsm < 1) {
+			previewPsm := 1
+			ctrlObj.Value := previewPsm
+		}
+		RefreshGui()
 	}
 }
