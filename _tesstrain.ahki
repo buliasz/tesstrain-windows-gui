@@ -119,7 +119,8 @@ RATIO_TRAIN := round(0.90, 2)
 ; Default Target Error Rate. Default: 0.01
 TARGET_ERROR_RATE := 0.01
 
-StatusUpdate := (statusMessage) => ToolTip(statusMessage)
+DEFAULT_STATUS_FUNCTION := (statusMessage) => TemporaryTooltip(statusMessage, 2)
+StatusUpdate := DEFAULT_STATUS_FUNCTION
 
 ; Make sure that extensions are sorted starting from the longest, to avoid situations where for 'name.bin.png' produced txt file name would be 'name.bin.gt.txt' instead of 'name.gt.txt'.
 SUPPORTED_IMAGE_FILES := ArraySort(SUPPORTED_IMAGE_FILES, StrLengthCmp)

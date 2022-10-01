@@ -243,9 +243,9 @@ OcrImageFile(imageFullPath, lang:="", tessdataDir:="", pis:=0, local_psm:="") {
 
 ProgressStatusGui(newStatus:="", parentGui:="", windowTitle:="Training progress") {
 	static lastStatus:="", statusGui:="", savedParentGui:="", bcer:={}, generateBtn:={}
-	global SHUTDOWN_AFTER_TRAINING_COMPLETION
+	global SHUTDOWN_AFTER_TRAINING_COMPLETION, StatusUpdate
 
-	; Remove StatusGui if empty arguments
+	; Remove StatusGui if empty arguments and resets to default status function
 	if (!newStatus && statusGui) {
 		MonitorCheckpoints(false)
 		if (savedParentGui) {
@@ -254,6 +254,7 @@ ProgressStatusGui(newStatus:="", parentGui:="", windowTitle:="Training progress"
 		bcer := generateBtn := {}	; prevents error if there is an ongoing CheckCheckpoints timer
 		statusGui.Destroy()
 		lastStatus := statusGui := savedParentGui := ""
+		StatusUpdate := DEFAULT_STATUS_FUNCTION
 		return
 	}
 
@@ -427,4 +428,9 @@ DisableSystemStandby(shouldDisable) {
 		DllCall("SetThreadExecutionState", "UInt", newState)
 		oldState := newState
 	}
+}
+
+TemporaryTooltip(message, seconds) {
+	ToolTip(message)
+	SetTimer(Tooltip, -1000 * seconds)
 }
