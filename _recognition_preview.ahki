@@ -24,7 +24,6 @@ PreviewRecognition(btnCtrl, *) {
 	preserveSpaces := false
 	recognizedValue := expectedValue := ""
 	previewPsm := PSM
-	previewGoto := 1
 
 	if (!CheckGeneratedModelExistence()) {
 		message := "There is no newly generated model of name '" MODEL_NAME "' inside the '" DATA_DIR "' folder.`n"
@@ -86,9 +85,9 @@ PreviewRecognition(btnCtrl, *) {
 
 	gotoButton := previewGui.Add("Button", "ys", "&Go to")
 	gotoButton.OnEvent("Click", GotoImagePosition)
-	gotoButton := previewGui.Add("Edit", "ys w60 Number")
-	gotoButton.OnEvent("Change", GotoChange)
-	previewGui.Add("UpDown", "Range1-999999", previewGoto)
+	gotoPageNumber := previewGui.Add("Edit", "ys w60 Number")
+	gotoPageNumber.OnEvent("Change", GotoChange)
+	previewGui.Add("UpDown", "Range1-" imageList.Length, 1)
 
 	closeButton := previewGui.Add("Button", "ys", "&Close")
 	closeButton.OnEvent("Click", CloseCb)
@@ -225,18 +224,15 @@ PreviewRecognition(btnCtrl, *) {
 	}
 
 	GotoImagePosition(*) {
-		imageListPosition := previewGoto
+		imageListPosition := gotoPageNumber.Value
 		RefreshGui()
 	}
 
 	GotoChange(ctrlObj, *) {
-		previewGoto := ctrlObj.Value
-		if (previewGoto > imageList.Length) {
-			previewGoto := imageList.Length
-			ctrlObj.Value := previewGoto
-		} else if (previewGoto < 1) {
-			previewGoto := 1
-			ctrlObj.Value := previewGoto
+		if (ctrlObj.Value > imageList.Length) {
+			ctrlObj.Value := imageList.Length
+		} else if (imageList.Length < 1) {
+			ctrlObj.Value := 1
 		}
 	}
 
