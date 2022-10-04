@@ -169,6 +169,7 @@ PreviewRecognition(btnCtrl, *) {
 		loop {
 			ShowNextImage()
 		} until !searchEnabled || closeRequest || imageListPosition == imageList.Length || !CompareResults(recognizedValue, expectedValue)
+		SoundBeep 1800, 100
 		if (imageListPosition == imageList.Length) {
 			AotBox("No more images")
 		}
