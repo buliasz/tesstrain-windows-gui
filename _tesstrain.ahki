@@ -152,7 +152,7 @@ MultipleCheckpointToTraineddata(checkpointFileList, isFast) {
 	targetDir := OUTPUT_DIR "\traineddata_" bestOrFast
 	DirCreate(targetDir)
 	for (checkpointFile in checkpointFileList) {
-		outputTraineddataFile := targetDir "\" StrCutEnd(FileGetName(checkpointFile), StrLen("checkpoint")) "traineddata"
+		outputTraineddataFile := targetDir "\" StrCutEnd(FileGetName(checkpointFile), StrLen("_checkpoint")) ".traineddata"
 		Checkpoint2Traineddata(checkpointFile, outputTrainedDataFile, isFast)
 	}
 }
