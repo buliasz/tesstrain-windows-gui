@@ -50,7 +50,7 @@ PreviewRecognition(btnCtrl, *) {
 		return
 	}
 
-	imageList := ArraySort(imageList, (a,b)=>a.modified-b.modified) 	; Sort by modificaton date descending
+	imageList := ArraySort(imageList, (a,b)=>b.modified-a.modified) 	; Sort by modificaton date descending
 	imageListPosition := 1
 
 	; Create GUI
@@ -89,9 +89,6 @@ PreviewRecognition(btnCtrl, *) {
 	gotoPageNumber.OnEvent("Change", GotoChange)
 	previewGui.Add("UpDown", "Range1-" imageList.Length, 1)
 
-	closeButton := previewGui.Add("Button", "ys", "&Close")
-	closeButton.OnEvent("Click", CloseCb)
-
 	previewGui.Add("Text", "ys hp +0x200", "PSM")
 	psmInputCtrl := previewGui.Add("Edit", "ys w50 Number")
 	psmInputCtrl.OnEvent("Change", PsmChange)
@@ -129,30 +126,24 @@ PreviewRecognition(btnCtrl, *) {
 		}
 		ocrInProgress := true
 
+		; prepare values
 		imageFullPath := imageList[imageListPosition].path
-		imagePathCtrl.Text := imageFullPath
-
+		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr, preserveSpaces, previewPsm)
 		expectedValue := GetGtTxtContent()
-		gtTxtCtrl.Text := expectedValue
 
+		; update displayed values
+		imagePathCtrl.Text := imageFullPath
+		gtTxtCtrl.Text := expectedValue
+		ocrResultCtrl.Text := recognizedValue
+		ocrResultCtrl.SetFont("bold " (CompareResults(recognizedValue, expectedValue) ? "cGreen" : "cRed"))
+		progressStatus.SetText("Preview OCR for image " imageListPosition " / " imageList.Length)
+		picCtrl.Value := "*w" (col1Width + col2Width) " *h-1 " imageFullPath  ; Load the image.
 		if (!searchEnabled) {
 			nextButton.Enabled := (imageListPosition < imageList.Length)
 			previousButton.Enabled := (imageListPosition > 1)
 		}
-
-		picCtrl.Value := "*w" (col1Width + col2Width) " *h-1 " imageFullPath  ; Load the image.
-
-		progressStatus.SetText("Preview OCR for image " imageListPosition " / " imageList.Length)
-
 		previewGui.Show("AutoSize")  ; Resize the window to match the picture size.
-
 		imagePathCtrl.Focus()
-
-		ocrResultCtrl.SetFont("norm cBlack")
-		ocrResultCtrl.Text := "...recognizing..."
-		recognizedValue := OcrImageFile(imageFullPath, modelNameForOcr, tessdataDirForOcr, preserveSpaces, previewPsm)
-		ocrResultCtrl.SetFont("bold " (CompareResults(recognizedValue, expectedValue) ? "cGreen" : "cRed"))
-		ocrResultCtrl.Text := recognizedValue
 
 		ocrInProgress := false
 		if (closeRequest) {
@@ -238,7 +229,6 @@ PreviewRecognition(btnCtrl, *) {
 	}
 
 	CloseCb(*) {
-		closeButton.Enabled := false
 		if (searchEnabled || ocrInProgress) {
 			closeRequest := true
 			return
