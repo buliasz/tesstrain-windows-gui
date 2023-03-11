@@ -107,7 +107,7 @@ TesstrainGui() {
 		AddFolderSelection(
 			"Input Ground Truth directory",
 			"GROUND_TRUTH_DIR",
-			"Directory containing line images (supported formats: " ArrayJoin(SUPPORTED_IMAGE_FILES, ", ") ") and corresponding transcription files (.gt.txt). Transcriptions must be single-line plain text and have the same name as the line image but with the image extension replaced by .gt.txt.`n"
+			"Directory containing line images (supported formats: " ArrayToString(SUPPORTED_IMAGE_FILES, ", ") ") and corresponding transcription files (.gt.txt). Transcriptions must be single-line plain text and have the same name as the line image but with the image extension replaced by .gt.txt.`n"
 				. "The '.box' and '.lstmf' files will aslo be generated and saved here.`n`n"
 				. "Note that if there are missing .gt.txt files you will be asked to input what should be recognized for each picture that is missing corresponding .gt.txt file and your answer will be saved in a proper .gt.txt file.",
 			OnGroundTruthDirChange
@@ -574,7 +574,7 @@ TesstrainGui() {
 				break
 			} else if (foundFiles.Length > 1) {
 				if (showPrompts) {
-					ErrorBox("Error: Multiple binaries found matching criteria: '*" binaryName "*.exe':`n" ArrayJoin(foundFiles, "`n"))
+					ErrorBox("Error: Multiple binaries found matching criteria: '*" binaryName "*.exe':`n" ArrayToString(foundFiles, "`n"))
 				}
 				errored := true
 				break
@@ -632,7 +632,7 @@ TesstrainGui() {
 		if (showPrompts) {
 			ErrorBox("No line images found in your selected Ground Truth directory. "
 				. "Please make sure to copy line image files that would be used for training before starting the training.`n"
-				. "Supported formats: " ArrayJoin(SUPPORTED_IMAGE_FILES, ", "))
+				. "Supported formats: " ArrayToString(SUPPORTED_IMAGE_FILES, ", "))
 		}
 		mainGui["GROUND_TRUTH_DIR"].SetFont("cRed bold")
 		WRONG_INPUT_MAP["GROUND_TRUTH_DIR"] := "No line image files in the 'Ground Truth folder'"

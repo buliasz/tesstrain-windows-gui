@@ -68,7 +68,7 @@ ArrayForEach(arr, Callback) {
 	}
 }
 
-ArrayJoin(arr, joinWith:=" ") {
+ArrayToString(arr, joinWith:=" ") {
 	ret := ""
 	for element in arr {
 		if (A_Index > 1) {
