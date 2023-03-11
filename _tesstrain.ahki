@@ -298,10 +298,10 @@ GenerateTrainAndEvalLists() {
 	StatusUpdate("Creating 'list.train' and 'list.eval' of .lstmf files")
 	
 	trainList := ArrayHead(allLstmf, train)
-	FileSave(OUTPUT_DIR "\list.train", ArrayJoin(trainList, "`n") "`n")
+	FileSave(OUTPUT_DIR "\list.train", ArrayToString(trainList, "`n") "`n")
 
 	evalList := ArrayTail(allLstmf, eval)
-	FileSave(OUTPUT_DIR "\list.eval", ArrayJoin(evalList, "`n") "`n")
+	FileSave(OUTPUT_DIR "\list.eval", ArrayToString(evalList, "`n") "`n")
 }
 
 GenerateAllLstmfFiles() {
@@ -315,7 +315,7 @@ GenerateAllLstmfFiles() {
 	
 	lstmfFilesList := FindAllFiles(GROUND_TRUTH_DIR "\*.lstmf")
 
-	FileSave(OUTPUT_DIR "\all-lstmf", ArrayJoin(lstmfFilesList, "`n") "`n")
+	FileSave(OUTPUT_DIR "\all-lstmf", ArrayToString(lstmfFilesList, "`n") "`n")
 
 	ExecuteCommand(PYTHON_EXE " shuffle.py " RANDOM_SEED " < `"" OUTPUT_DIR "\all-lstmf`" > `"" OUTPUT_DIR "\all-lstmf.shuffled`"", 2)
 	lstmfList := GetNonEmptyLines(OUTPUT_DIR "\all-lstmf.shuffled")
