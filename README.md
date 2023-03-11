@@ -17,8 +17,7 @@ The GUI executable is portable. You can copy the `tesstrain_gui.exe` file to any
 You will need version 4 or newer of Tesseract executables (that include the
 training tools and matching leptonica bindings).
 
-You can download executables built from the latest code version using the [zdenop's
-AppVeyor](https://ci.appveyor.com/project/zdenop/tesseract/build/artifacts). 
+I recommend downloading executables from the [Tesseract at UB Mannheim](https://github.com/UB-Mannheim/tesseract/wiki) repository. 
 
 You will also need a copy of 'traineddata' which you can find for example on the [official Tesseract
 website](https://tesseract-ocr.github.io/tessdoc/#traineddata-files). Make sure you will download the
