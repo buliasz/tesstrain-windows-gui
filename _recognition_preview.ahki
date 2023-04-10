@@ -83,6 +83,9 @@ PreviewRecognition(btnCtrl, *) {
 	stopSearchButton := previewGui.Add("Button", "xp yp Hidden", "&Stop searching")
 	stopSearchButton.OnEvent("Click", StopSearchCallback)
 
+	deleteButton := previewGui.Add("Button", "ys", "&Delete")
+	deleteButton.OnEvent("Click", DeleteFilesCallback)
+
 	gotoButton := previewGui.Add("Button", "ys", "&Go to")
 	gotoButton.OnEvent("Click", GotoImagePosition)
 	gotoPageNumber := previewGui.Add("Edit", "ys w60 Number")
@@ -149,6 +152,28 @@ PreviewRecognition(btnCtrl, *) {
 		if (closeRequest) {
 			CloseCb()
 		}
+	}
+
+	DeleteFilesCallback(*) {
+		imageFullPath := imageList[imageListPosition].path
+		FileDelete(imageFullPath)
+
+		gtTxtPath := RemoveImageExtension(imageFullPath) ".gt.txt"
+		if (FileExist(gtTxtPath)) {
+			FileDelete(gtTxtPath)
+		}
+
+		lstmfPath := RemoveImageExtension(imageFullPath) ".lstmf"
+		if (FileExist(lstmfPath)) {
+			FileDelete(lstmfPath)
+		}
+
+		boxPath := RemoveImageExtension(imageFullPath) ".box"
+		if (FileExist(boxPath)) {
+			FileDelete(boxPath)
+		}
+
+		imageList.RemoveAt(imageListPosition)
 	}
 
 	FindNextWrongOcr(searchCtrl, *) {
