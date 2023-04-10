@@ -25,7 +25,7 @@ PreviewRecognition(btnCtrl, *) {
 	recognizedValue := expectedValue := ""
 	previewPsm := PSM
 
-	if (!CheckGeneratedModelExistence()) {
+	if (!_CheckGeneratedModelExistence()) {
 		message := "There is no newly generated model of name '" MODEL_NAME "' inside the '" DATA_DIR "' folder.`n"
 		if (START_MODEL) {
 			if (YesNoConfirmation(message "Do you want to use Start Model instead for this preview?")) {
@@ -72,36 +72,36 @@ PreviewRecognition(btnCtrl, *) {
 	previewGui.SetFont()
 
 	previousButton := previewGui.Add("Button", "xm section default Disabled" (imageListPosition == 1), "&Previous")
-	previousButton.OnEvent("Click", ShowPreviousImage)
+	previousButton.OnEvent("Click", _ShowPreviousImage)
 
 	nextButton := previewGui.Add("Button", "ys Disabled" (imageListPosition == imageList.Length), "&Next")
-	nextButton.OnEvent("Click", ShowNextImage)
+	nextButton.OnEvent("Click", _ShowNextImage)
 
 	searchWrongButton := previewGui.Add("Button", "ys", "Find next &Wrong OCR")
-	searchWrongButton.OnEvent("Click", FindNextWrongOcr)
+	searchWrongButton.OnEvent("Click", _FindNextWrongOcr)
 
 	stopSearchButton := previewGui.Add("Button", "xp yp Hidden", "&Stop searching")
-	stopSearchButton.OnEvent("Click", StopSearchCallback)
+	stopSearchButton.OnEvent("Click", _StopSearchCallback)
 
 	deleteButton := previewGui.Add("Button", "ys", "&Delete")
-	deleteButton.OnEvent("Click", DeleteFilesCallback)
+	deleteButton.OnEvent("Click", _DeleteFilesCallback)
 
 	gotoButton := previewGui.Add("Button", "ys", "&Go to")
-	gotoButton.OnEvent("Click", GotoImagePosition)
+	gotoButton.OnEvent("Click", _GotoImagePosition)
 	gotoPageNumber := previewGui.Add("Edit", "ys w60 Number")
-	gotoPageNumber.OnEvent("Change", GotoChange)
+	gotoPageNumber.OnEvent("Change", _GotoChange)
 	previewGui.Add("UpDown", "Range1-" imageList.Length, 1)
 
 	previewGui.Add("Text", "ys hp +0x200", "PSM")
 	psmInputCtrl := previewGui.Add("Edit", "ys w50 Number")
-	psmInputCtrl.OnEvent("Change", PsmChange)
+	psmInputCtrl.OnEvent("Change", _PsmChange)
 	previewGui.Add("UpDown", "Range1-13", previewPsm)
 
 	preserveSpacesCtrl := previewGui.Add("Checkbox", "ys Checked" preserveSpaces, "Preserve inter-word spaces")
-	preserveSpacesCtrl.OnEvent("Click", (ctrlObj, *)=>(preserveSpaces:=ctrlObj.Value, RefreshGui()))
+	preserveSpacesCtrl.OnEvent("Click", (ctrlObj, *)=>(preserveSpaces:=ctrlObj.Value, _RefreshGui()))
 
 	ignoreSpacesCtrl := previewGui.Add("Checkbox", "xp Checked" ignoreSpaces, "Ignore spaces")
-	ignoreSpacesCtrl.OnEvent("Click", (ctrlObj,*)=>(ignoreSpaces:=ctrlObj.Value, preserveSpacesCtrl.Enabled:=!ignoreSpaces, RefreshGui()))
+	ignoreSpacesCtrl.OnEvent("Click", (ctrlObj,*)=>(ignoreSpaces:=ctrlObj.Value, preserveSpacesCtrl.Enabled:=!ignoreSpaces, _RefreshGui()))
 
 	picCtrl := previewGui.Add("Picture", "xm w" (col1Width + col2Width) " h-1", imageFullPath)
 
@@ -109,10 +109,10 @@ PreviewRecognition(btnCtrl, *) {
 	previewGui.Title := PROGRAM_TITLE " - Ground Truth Preview"
 
 	previewGui.Show("AutoSize")  ; Resize the window to match the picture size.
-	previewGui.OnEvent("Close", CloseCb)
-	previewGui.OnEvent("Escape", CloseCb)
+	previewGui.OnEvent("Close", _CloseCb)
+	previewGui.OnEvent("Escape", _CloseCb)
 	btnCtrl.Gui.Opt("+Disabled")
-	RefreshGui()
+	_RefreshGui()
 
 	GetGtTxtContent() {
 		gtTxtPath := RemoveImageExtension(imageFullPath) ".gt.txt"
@@ -123,7 +123,7 @@ PreviewRecognition(btnCtrl, *) {
 		}
 	}
 
-	RefreshGui() {
+	_RefreshGui() {
 		if (closeRequest) {
 			return
 		}
@@ -138,7 +138,7 @@ PreviewRecognition(btnCtrl, *) {
 		imagePathCtrl.Text := imageFullPath
 		gtTxtCtrl.Text := expectedValue
 		ocrResultCtrl.Text := recognizedValue
-		ocrResultCtrl.SetFont("bold " (CompareResults(recognizedValue, expectedValue) ? "cGreen" : "cRed"))
+		ocrResultCtrl.SetFont("bold " (_CompareResults(recognizedValue, expectedValue) ? "cGreen" : "cRed"))
 		progressStatus.SetText("Preview OCR for image " imageListPosition " / " imageList.Length)
 		picCtrl.Value := "*w" (col1Width + col2Width) " *h-1 " imageFullPath  ; Load the image.
 		if (!searchEnabled) {
@@ -150,11 +150,14 @@ PreviewRecognition(btnCtrl, *) {
 
 		ocrInProgress := false
 		if (closeRequest) {
-			CloseCb()
+			_CloseCb()
 		}
 	}
 
-	DeleteFilesCallback(*) {
+	_DeleteFilesCallback(*) {
+		if (!YesNoConfirmation("Do you want to delete current image with corresponding .gt.txt, .lstmf and .box files?")) {
+			return
+		}
 		imageFullPath := imageList[imageListPosition].path
 		FileDelete(imageFullPath)
 
@@ -174,17 +177,18 @@ PreviewRecognition(btnCtrl, *) {
 		}
 
 		imageList.RemoveAt(imageListPosition)
+		_RefreshGui()
 	}
 
-	FindNextWrongOcr(searchCtrl, *) {
-		ReplaceControl(searchWrongButton, stopSearchButton)
+	_FindNextWrongOcr(searchCtrl, *) {
+		_ReplaceControl(searchWrongButton, stopSearchButton)
 		previousButton.Enabled := false
 		nextButton.Enabled := false
 
 		searchEnabled := true
 		loop {
-			ShowNextImage()
-		} until !searchEnabled || closeRequest || imageListPosition == imageList.Length || !CompareResults(recognizedValue, expectedValue)
+			_ShowNextImage()
+		} until !searchEnabled || closeRequest || imageListPosition == imageList.Length || !_CompareResults(recognizedValue, expectedValue)
 		SoundBeep 1800, 100
 		if (imageListPosition == imageList.Length) {
 			AotBox("No more images")
@@ -192,15 +196,15 @@ PreviewRecognition(btnCtrl, *) {
 		searchEnabled := false
 
 		if (closeRequest) {
-			CloseCb()
+			_CloseCb()
 		} else {
-			ReplaceControl(stopSearchButton, searchWrongButton)
+			_ReplaceControl(stopSearchButton, searchWrongButton)
 			previousButton.Enabled := true
 			nextButton.Enabled := true
 		}
 	}
 
-	ReplaceControl(controlToReplace, newControl) {
+	_ReplaceControl(controlToReplace, newControl) {
 		if (closeRequest) {
 			return
 		}
@@ -210,11 +214,11 @@ PreviewRecognition(btnCtrl, *) {
 		newControl.Move(x, y, w, h)
 	}
 
-	StopSearchCallback(stopCtrl, *) {
+	_StopSearchCallback(stopCtrl, *) {
 		searchEnabled := false
 	}
 
-	CompareResults(ocrResult, gtTxtValue) {
+	_CompareResults(ocrResult, gtTxtValue) {
 		if (ignoreSpaces) {
 			ocrResult := StrReplace(ocrResult, " ")
 			gtTxtValue := StrReplace(gtTxtValue, " ")
@@ -222,30 +226,30 @@ PreviewRecognition(btnCtrl, *) {
 		return ocrResult == gtTxtValue
 	}
 
-	ShowPreviousImage(*) {
+	_ShowPreviousImage(*) {
 		if (imageListPosition == 1) {
 			NotAllowedBox("Already at first one")
 			return
 		}
 		imageListPosition -= 1
-		RefreshGui()
+		_RefreshGui()
 	}
 
-	ShowNextImage(*) {
+	_ShowNextImage(*) {
 		if (imageListPosition == imageList.Length) {
 			NotAllowedBox("No more files")
 			return
 		}
 		imageListPosition += 1
-		RefreshGui()
+		_RefreshGui()
 	}
 
-	GotoImagePosition(*) {
+	_GotoImagePosition(*) {
 		imageListPosition := gotoPageNumber.Value
-		RefreshGui()
+		_RefreshGui()
 	}
 
-	GotoChange(ctrlObj, *) {
+	_GotoChange(ctrlObj, *) {
 		if (ctrlObj.Value > imageList.Length) {
 			ctrlObj.Value := imageList.Length
 		} else if (imageList.Length < 1) {
@@ -253,7 +257,7 @@ PreviewRecognition(btnCtrl, *) {
 		}
 	}
 
-	CloseCb(*) {
+	_CloseCb(*) {
 		if (searchEnabled || ocrInProgress) {
 			closeRequest := true
 			return
@@ -262,12 +266,12 @@ PreviewRecognition(btnCtrl, *) {
 		previewGui.Destroy()
 	}
 
-	CheckGeneratedModelExistence() {
+	_CheckGeneratedModelExistence() {
 		generatedModelFile := DATA_DIR "\" MODEL_NAME ".traineddata"
 		return FileExist(generatedModelFile)
 	}
 	
-	PsmChange(ctrlObj, *) {
+	_PsmChange(ctrlObj, *) {
 		previewPsm := ctrlObj.Value
 		if (previewPsm > 13) {
 			previewPsm := 13
@@ -276,6 +280,6 @@ PreviewRecognition(btnCtrl, *) {
 			previewPsm := 1
 			ctrlObj.Value := previewPsm
 		}
-		RefreshGui()
+		_RefreshGui()
 	}
 }
