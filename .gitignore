@@ -18,3 +18,5 @@ main.zip
 plot/*.LOG
 plot/ocrd*
 tesstrain_gui.ini
+gui
+src
