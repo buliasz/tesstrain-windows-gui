@@ -74,7 +74,7 @@ script](https://github.com/OCR-D/ocrd-train/issues/7#issuecomment-419714852).
 
 ## Train
 
-Execute the `tesstrain_gui.py` and follow the displayed instructions.
+Execute the `gui.py` and follow the displayed instructions.
 
 ## License
 

@@ -1,6 +1,6 @@
 import tkinter as tk
 
-CONFIGURATION_FILE = "tesstrain_gui.ini"
+CONFIGURATION_FILE = "gui.cfg"
 
 Config = {}
 

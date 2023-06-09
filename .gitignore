@@ -17,4 +17,5 @@ master.zip
 main.zip
 plot/*.LOG
 plot/ocrd*
-tesstrain_gui.ini
+gui.cfg
+gui/__pycache__
