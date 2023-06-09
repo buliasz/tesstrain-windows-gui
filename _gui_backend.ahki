@@ -154,6 +154,7 @@ CleanModelData(*) {
 		if (DELETE_LSTMF_FILES) {
 			DeleteLstmfFiles()
 		}
+		MsgBox("Cleaning finished")
 	}
 }
 
