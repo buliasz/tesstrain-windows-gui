@@ -1,25 +1,22 @@
 # Tesseract train GUI for Windows
 
-> Tesseract language training Windows GUI v5.12 for Tesseract 4+. Both Windows executable and source AutoHotKey script files are provided.
+> Tesseract language training Windows GUI v6.0 for Tesseract and Tesstrain. Source AutoHotKey script file can be compiled to an .exe (example command can be find in the provided `create_exe.cmd` file).
 
 ## Donate a cup of coffee
 
 <a href="https://www.buymeacoffee.com/buliasz" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
-Please don't forget this fork is for Windows GUI implementation developed by only one developer (so far). The Tesseract and Tesstrain projects for which this GUI  is created are much larger open source projects.
+Please don't forget this fork is for Windows GUI implementation. The Tesseract and Tesstrain projects for which this GUI  is created are separate large open source projects.
 
 ## Install
 
-The GUI executable is portable. You can copy the `tesstrain_gui.exe` file to any directory and execute it.
+The GUI is portable. You can copy the `tesstrain_gui.ahk` (or the compiled .exe file) file to any directory and execute it.
 
 ### Requirements
 
-You will need version 4 or newer of Tesseract executables (that include the
-training tools and matching leptonica bindings).
+You will need current version of Tesseract executables (that include the training tools executables and matching leptonica bindings). I recommend downloading executables from the [Tesseract at UB Mannheim](https://github.com/UB-Mannheim/tesseract/wiki) repository. 
 
-I recommend downloading executables from the [Tesseract at UB Mannheim](https://github.com/UB-Mannheim/tesseract/wiki) repository. 
-
-You will also need a copy of 'traineddata' which you can find for example on the [official Tesseract
+You will also need a copy of 'traineddata' binary which you can find for example on the [official Tesseract
 website](https://tesseract-ocr.github.io/tessdoc/#traineddata-files). Make sure you will download the
 model marked as 'best' if you want to use it as a 'Start model' for your new model (the 'fast' one cannot be
 used as a 'Start model').
@@ -75,7 +72,7 @@ script](https://github.com/OCR-D/ocrd-train/issues/7#issuecomment-419714852).
 
 ## Train
 
-Execute the `tesstrain_gui.exe` and follow the displayed instructions.
+Execute the `tesstrain_gui.ahk` and follow the displayed instructions.
 
 ## License
 

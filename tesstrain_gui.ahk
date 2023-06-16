@@ -9,17 +9,18 @@
 ; See the License for the specific language governing permissions and
 ; limitations under the License.
 
-#include _tesstrain.ahki
-#include _gt_txt_creator.ahki
-#include _gui_backend.ahki
-#include _recognition_preview.ahki
+#include _tesstrain.ahk
+#include _gt_txt_creator.ahk
+#include _gui_backend.ahk
+#include _recognition_preview.ahk
 
 #NoTrayIcon
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
-VERSION_NUMBER := "5.12"
+VERSION_NUMBER := "6.0"
 PROGRAM_TITLE := "Tesstrain GUI"
+DEBUG_MODE := false
 
 if (!A_IsCompiled) {
 	TraySetIcon(A_ScriptDir "\icon.ico",,true)
@@ -27,7 +28,14 @@ if (!A_IsCompiled) {
 
 CONFIGURATION_FILE := A_ScriptDir "\tesstrain_gui.ini"
 
-CONFIGURATION_VARIABLES_LIST := ["BIN_DIR", "DATA_DIR", "TESSDATA", "GROUND_TRUTH_DIR", "DEBUG_MODE", "MODEL_NAME", "OUTPUT_DIR", "WORDLIST_FILE", "NUMBERS_FILE", "PUNC_FILE", "START_MODEL", "LAST_CHECKPOINT", "PROTO_MODEL", "MAX_ITERATIONS", "DEBUG_INTERVAL", "LEARNING_RATE", "NET_SPEC", "LANG_TYPE", "NORM_MODE", "PASS_THROUGH_RECORDER", "LANG_IS_RTL", "GENERATE_BOX_SCRIPT", "PSM", "RANDOM_SEED", "RATIO_TRAIN", "TARGET_ERROR_RATE", "CREATE_BEST_TRAINEDDATA", "CREATE_FAST_TRAINEDDATA", "DELETE_BOX_FILES", "DELETE_LSTMF_FILES", "DELETE_MODEL_DIRECTORY", "AUTO_SAVE", "REQUIREMENTS_VERIFIED", "AUTO_CLEAN_OLD_DATA", "AUTO_UPDATE_TESSDATA", "BEEP_END_TRAINING"]
+CONFIGURATION_VARIABLES_LIST := [
+	"TESSTRAIN_DIR", "BIN_DIR", "DATA_DIR", "TESSDATA", "GROUND_TRUTH_DIR", "DEBUG_MODE", "MODEL_NAME", "OUTPUT_DIR", 
+	"WORDLIST_FILE", "NUMBERS_FILE", "PUNC_FILE", "START_MODEL", "LAST_CHECKPOINT", "PROTO_MODEL", "MAX_ITERATIONS", 
+	"DEBUG_INTERVAL", "LEARNING_RATE", "NET_SPEC", "LANG_TYPE", "NORM_MODE", "PASS_THROUGH_RECORDER", "LANG_IS_RTL", 
+	"GENERATE_BOX_SCRIPT", "PSM", "RANDOM_SEED", "RATIO_TRAIN", "TARGET_ERROR_RATE", "CREATE_BEST_TRAINEDDATA", 
+	"CREATE_FAST_TRAINEDDATA", "DELETE_BOX_FILES", "DELETE_LSTMF_FILES", "DELETE_MODEL_DIRECTORY", "AUTO_SAVE", 
+	"REQUIREMENTS_VERIFIED", "AUTO_CLEAN_OLD_DATA", "AUTO_UPDATE_TESSDATA", "BEEP_END_TRAINING"
+]
 
 CREATE_BEST_TRAINEDDATA := true
 CREATE_FAST_TRAINEDDATA := true
@@ -54,18 +62,17 @@ VALUE_VALIDATORS := Map(
 TesstrainGui()
 
 TesstrainGui() {
-	global mainGui, BIN_DIR, DATA_DIR, TESSDATA, GROUND_TRUTH_DIR, DEBUG_MODE, MODEL_NAME, OUTPUT_DIR, WORDLIST_FILE, NUMBERS_FILE, PUNC_FILE, START_MODEL, LAST_CHECKPOINT, PROTO_MODEL, MAX_ITERATIONS, DEBUG_INTERVAL, LEARNING_RATE, NET_SPEC, LANG_TYPE, NORM_MODE, PASS_THROUGH_RECORDER, LANG_IS_RTL, GENERATE_BOX_SCRIPT, PSM, RANDOM_SEED, RATIO_TRAIN, TARGET_ERROR_RATE, BINARIES, CREATE_BEST_TRAINEDDATA, CREATE_FAST_TRAINEDDATA, REQUIREMENTS_VERIFIED
-
 	static firstColumnWidth:=225, secondColumnWidth:=370, rowHeight:=19
-	mainGui := ""
+	global mainGui := ""
 
 	LoadSettings()
 	if (!REQUIREMENTS_VERIFIED) {
 		VerifyRequirements()
-		REQUIREMENTS_VERIFIED := true
+		global REQUIREMENTS_VERIFIED := true
 	}
 
 	CreateGui()
+	return
 
 	CreateGui()	{
 		mainGui := Gui("+OwnDialogs", PROGRAM_TITLE " v." VERSION_NUMBER)
@@ -93,7 +100,7 @@ TesstrainGui() {
 		modelList := GetStartModelList()
 		if (!ArrayContains(modelList, START_MODEL)) {
 			ErrorBox("Couldn't find the selected 'Start model' in your 'TessData folder'. Selecting no start model.")
-			START_MODEL := modelList[1]
+			global START_MODEL := modelList[1]
 		}
 		AddDropDown(
 			"Start model (optional)",
@@ -117,13 +124,14 @@ TesstrainGui() {
 			"DATA_DIR",
 			"Data directory for output files, proto model, start model, etc.`n"
 				. "It will be created if doesn't exist. It is shown only for your reference.`n`n"
-				. "This folder will also contain the new generated .traineddata file after successful training."
+				. "This folder will also contain the new generated .traineddata file after successful training.",			
+			UpdateAutoFolders
 		)
 		AddEditBox(
 			"New language model name",
 			"MODEL_NAME",
 			"Name of the model to be built.",,
-			OnModelNameChange
+			UpdateAutoFolders
 		)
 		AddFolderSelection(
 			"Training files output directory",
@@ -220,32 +228,38 @@ TesstrainGui() {
 
 		tabs.UseTab("Advanced")
 
+
+		AddFolderSelection(
+			"TessTrain scripts folder",
+			"TESSTRAIN_DIR",
+			"A path to TessTrain folder containing .py script files used for training. Can be downloaded from the tesstrain GitHub repository.",
+			OnTesstrainDirChange,
+			,
+			true
+		)
+
 		AddCheckbox(
 			"Debug mode",
 			"DEBUG_MODE",
 			"If enabled after each command executed in the system shell there will be a message showed with command output, waiting for confirmation to continue.",
-			true
 		)
 
 		AddCheckbox(
 			"Automatically clean old training data",
 			"AUTO_CLEAN_OLD_DATA",
 			"When enabled old training data will be removed without confirmation when a new training is started",
-			false
 		)
 
 		AddCheckbox(
 			"Automatically update TessData",
 			"AUTO_UPDATE_TESSDATA",
 			"If enabled, when training finishes successfuly, TessData folder will be updated with the newly trained model without confirmation. This means the new .traineddata file will be copied to the TessData folder. If the file already exist in TessData, it will be overwritten",
-			false
 		)
 
 		AddCheckbox(
 			"Notify the end of training with a beep",
 			"BEEP_END_TRAINING",
 			"When enabled a beep will sound at the end of the training.",
-			false
 		)
 
 		AddFileSelection(
@@ -253,14 +267,12 @@ TesstrainGui() {
 			"LAST_CHECKPOINT",
 			"During the training Tesseract creates checkpoint files. If the file already exists it will be used to generate .traineddata from it. Checkpoint files are saved within 'checkpoints' subfolder of the selected 'Training files output directory'.`n`n"
 				. "You can use 'Generate' button to generate .traineddata from any existing .checkpoint file.",,
-			false
 		)
 		AddFileSelection(
 			"Proto model file",
 			"PROTO_MODEL",
 			"Name of the proto model. It's an automatically generated file for starter traineddata with combined Dawgs/Unicharset/Recoder for language model. Usually it is '<YOUR MODEL NAME>.traineddata' file within 'Training files output directory'.`n`n"
 				. "Note that if you want to fine tune some existing model (for example English 'eng' model) you should use the 'Start model' option for that purpose.",,
-			false
 		)
 
 		AddFileSelection(
@@ -345,6 +357,7 @@ TesstrainGui() {
 		autosaveChb := mainGui.Add("Checkbox", "ys hp 0x20 Checked" AUTO_SAVE " vAUTO_SAVE", "Save settings &automatically on 'Start Training'")
 		autosaveChb.OnEvent("Click", SetCtrlNameGlobalToCtrlValue)
 
+		OnTesstrainDirChange(TESSTRAIN_DIR, false)
 		OnBinDirChange(BIN_DIR, false)
 		OnTessdataDirChange(TESSDATA, false)
 		OnGroundTruthDirChange(GROUND_TRUTH_DIR, false)
@@ -368,7 +381,7 @@ TesstrainGui() {
 			folder := DirSelect("*" %targetVariableName%,, "Please choose: " title)
 			if (folder) {
 				guiCtrl.Text := folder
-				%targetVariableName% := folder
+				SetGlobal(targetVariableName, folder)
 				if (OnChange) {
 					OnChange(folder)
 				}
@@ -389,7 +402,7 @@ TesstrainGui() {
 			selectedFile := FileSelect("*" %targetVariableName%,, "Please choose: " title)
 			if (selectedFile) {
 				guiCtrl.Text := selectedFile
-				%targetVariableName% := selectedFile
+				SetGlobal(targetVariableName, selectedFile)
 				if (OnChange) {
 					OnChange(selectedFile)
 				}
@@ -477,15 +490,14 @@ TesstrainGui() {
 		defaultBtn := mainGui.Add("Button", "ys hp", "Default")
 		defaultBtn.OnEvent("Click", SetDefaultValue)
 		SetDefaultValue(btnCtrl, *) {
-			%varableName% := defaultValue
+			SetGlobal(varableName, defaultValue)
 			btnCtrl.Gui[varableName].Value := defaultValue
 		}
 	}
 
 	SetCtrlNameGlobalToCtrlValue(ctrlObj, *) {
-		global
-		local globalName := ctrlObj.Name
-		local newValue := ctrlObj.Value
+		globalName := ctrlObj.Name
+		newValue := ctrlObj.Value
 		if (VALUE_VALIDATORS.Has(globalName) && !VALUE_VALIDATORS[globalName](newValue)) {
 			mainGui[globalName].SetFont("cRed bold")
 			WRONG_INPUT_MAP[globalName] := "Wrong value for '" globalName "'"
@@ -493,22 +505,23 @@ TesstrainGui() {
 		}
 		mainGui[globalName].SetFont("cDefault norm")
 		MapSafeDelete(WRONG_INPUT_MAP, globalName)
-		%globalName% := newValue
+		SetGlobal(globalName, newValue)
 	}
 
 	SetCtrlNameGlobalToCtrlText(guiCtrl, *) {
-		global
-		%guiCtrl.Name% := guiCtrl.Text
+		SetGlobal(guiCtrl.Name, guiCtrl.Text)
 	}
 
 	; Updates value of a control and global variable to the provided one
 	UpdateValue(globalName, newValue) {
-		mainGui[globalName].Value := %globalName% := newValue
+		mainGui[globalName].Value := newValue
+		SetGlobal(globalName, newValue)
 	}
 
 	; Updates text value of a control and global variable to the provided one
 	UpdateTextValue(globalName, newValue) {
-		mainGui[globalName].Text := %globalName% := newValue
+		mainGui[globalName].Text := newValue
+		SetGlobal(globalName, newValue)
 	}
 
 	; CALLBACKS
@@ -545,15 +558,40 @@ TesstrainGui() {
 		}
 	}
 
-	OnModelNameChange(*) {
+	UpdateAutoFolders(*) {
 		UpdateValue("OUTPUT_DIR", DATA_DIR "\" MODEL_NAME)
 		UpdateValue("LAST_CHECKPOINT", OUTPUT_DIR "\checkpoints\" MODEL_NAME "_checkpoint")
 		UpdateValue("PROTO_MODEL", OUTPUT_DIR "\" MODEL_NAME ".traineddata")
 	}
 
-	OnBinDirChange(newBinDir, showPrompts:=true) {
-		static binariesList := ["tesseract", "combine_tessdata", "unicharset_extractor", "merge_unicharsets", "lstmtraining", "combine_lang_model"]
+	OnTesstrainDirChange(newBinDir, showPrompts:=true) {
+		static pyscriptList := ["generate_wordstr_box", "generate_wordstr_box", "generate_line_box", "shuffle"]
 
+		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
+
+		errored := false
+
+		for pyscript in pyscriptList {
+			if (!FileExist(TESSTRAIN_DIR "\" pyscript ".py")) {
+				if (showPrompts) {
+					ErrorBox("Error: Couldn't find '" pyscript ".py' script in the '" TESSTRAIN_DIR "' (TessTrain) directory.")
+				}
+				errored := true
+				break
+			}
+		}
+
+		if (errored) {
+			mainGui["TESSTRAIN_DIR"].SetFont("cRed bold")
+			WRONG_INPUT_MAP["TESSTRAIN_DIR"] := "Wrong 'TessTrain' scripts folder"
+		}
+		else {
+			mainGui["TESSTRAIN_DIR"].SetFont("cDefault norm")
+			MapSafeDelete(WRONG_INPUT_MAP, "TESSTRAIN_DIR")
+		}
+	}
+
+	OnBinDirChange(newBinDir, showPrompts:=true) {
 		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
 
 		errored := false
@@ -643,6 +681,8 @@ TesstrainGui() {
 	}
 
 	UpdateStartModel() {
+		global START_MODEL
+		
 		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
 
 		modelList := GetStartModelList()
