@@ -1,6 +1,7 @@
 # Tesseract train GUI for Windows
 
-> Tesseract language training Windows GUI v6.0 for Tesseract and Tesstrain. Source AutoHotKey script file can be compiled to an .exe (example command can be find in the provided `create_exe.cmd` file).
+> Tesseract language training Windows GUI v6.1 for Tesseract and Tesstrain. Source AutoHotKey script file can be compiled to an .exe (example command can be 
+> find in the provided `create_exe.cmd` file).
 
 ## Donate a cup of coffee
 

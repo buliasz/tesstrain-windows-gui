@@ -119,7 +119,7 @@ RATIO_TRAIN := round(0.90, 2)
 TARGET_ERROR_RATE := 0.01
 
 ; Default directory for TessTrain .py scripts
-TESSTRAIN_DIR := "."
+TESSTRAIN_DIR := A_ScriptDir
 
 DEFAULT_STATUS_FUNCTION := (statusMessage) => TemporaryTooltip(statusMessage, 2)
 StatusUpdate := DEFAULT_STATUS_FUNCTION
