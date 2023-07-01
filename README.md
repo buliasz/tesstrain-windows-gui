@@ -1,17 +1,17 @@
 # Tesseract train GUI for Windows
 
 > Tesseract language training Windows GUI v6.1 for Tesseract and Tesstrain. Source AutoHotKey script file can be compiled to an .exe (example command can be 
-> find in the provided `create_exe.cmd` file).
+> found in the provided `create_exe.cmd` file).
 
 ## Donate a cup of coffee
 
 <a href="https://www.buymeacoffee.com/buliasz" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
-Please don't forget this fork is for Windows GUI implementation. The Tesseract and Tesstrain projects for which this GUI  is created are separate large open source projects.
+Please don't forget this fork is only for Windows GUI implementation. The Tesseract and Tesstrain projects for which this GUI  is created are separate large open source projects. This is made fork only to include Tesstrain scripts for users convenience.
 
 ## Install
 
-The GUI is portable. You can copy the `tesstrain_gui.ahk` (or the compiled .exe file) file to any directory and execute it.
+The GUI is portable. You can copy the `tesstrain_gui.ahk` file (or .exe file after compilation if you prefer) to any directory and execute it.
 
 ### Requirements
 
@@ -56,7 +56,7 @@ the model name is referenced by `MODEL_NAME`.
 Place ground truth consisting of line images and transcriptions in a folder of your choice (default: 
 `data/MODEL_NAME-ground-truth`). GUI will generate list of those files, and split into training and evaluation data, the ratio can be defined in the GUI.
 
-Images must be in `.tif`, `.png`, `.bin.png`, `.nrm.png` or `.bmp` format.
+Images must be in `.tif`, `.png`, `.bin.png` or `.nrm.png` format.
 
 Transcriptions must be single-line plain text and have the same name as the
 line image but with the image extension replaced by `.gt.txt`. If any supported
