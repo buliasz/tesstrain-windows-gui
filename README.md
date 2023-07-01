@@ -11,7 +11,7 @@ Please don't forget this fork is only for Windows GUI implementation. The Tesser
 
 ## Install
 
-The GUI is portable. You can copy the `tesstrain_gui.ahk` file (or .exe file after compilation if you prefer) to any directory and execute it.
+The GUI is portable. You can execute the `tesstrain_gui.ahk` file from any folder (with AutoHotKey v2 executable). You can also compile it to an .exe file if you prefer (check the `create_exe.cmd` file for command example) which will allow to execute it without having AutoHotKey binaries on other machines.
 
 ### Requirements
 
