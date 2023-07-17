@@ -271,6 +271,7 @@ ProgressStatusGui(newStatus:="", parentGui:="", windowTitle:="Training progress"
 		}
 		statusGui.Add("Text", "section xm w115", "Best checkpoint BCER")
 		bcer := statusGui.Add("Text", "ys w50", "-")
+		bcer.SetFont("bold")
 		generateBtn := statusGui.Add("Button", "ys w240", "&Generate model from currently best checkpoint")
 		generateBtn.OnEvent("Click", GenerateTraineddata)
 		generateBtn.Enabled := false
@@ -318,6 +319,9 @@ GetBcerFromName(name) {
 	bcer := StrRCutFrom(bcer, "_")
 	bcer := StrRCutFrom(bcer, "_")
 	bcer := StrRCutTo(bcer, "_")
+	if (StrLen(bcer) > 5) {
+		bcer := SubStr(bcer, 1, 5)
+	}
 	return bcer
 }
 
