@@ -565,16 +565,18 @@ TesstrainGui() {
 	}
 
 	OnTesstrainDirChange(newBinDir, showPrompts:=true) {
-		static pyscriptList := ["generate_wordstr_box", "generate_wordstr_box", "generate_line_box", "shuffle"]
+		static pyscriptList := ["generate_wordstr_box.py", "generate_wordstr_box.py", "generate_line_box.py", "shuffle.py",
+			"requirements.txt",
+		]
 
 		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
 
 		errored := false
 
 		for pyscript in pyscriptList {
-			if (!FileExist(TESSTRAIN_DIR "\" pyscript ".py")) {
+			if (!FileExist(TESSTRAIN_DIR "\" pyscript)) {
 				if (showPrompts) {
-					ErrorBox("Error: Couldn't find '" pyscript ".py' script in the '" TESSTRAIN_DIR "' (TessTrain) directory.")
+					ErrorBox("Error: Couldn't find '" pyscript "' file in the '" TESSTRAIN_DIR "' (TessTrain) directory.")
 				}
 				errored := true
 				break

@@ -264,21 +264,22 @@ ProgressStatusGui(newStatus:="", parentGui:="", windowTitle:="Training progress"
 	}
 
 	if (!statusGui) {
-		statusGui := Gui("-Resize +AlwaysOnTop -SysMenu", windowTitle)
+		statusGui := Gui("-Resize +AlwaysOnTop -SysMenu +OwnDialogs", windowTitle)
 		if (parentGui) {
 			parentGui.Hide()
 			savedParentGui := parentGui
 		}
-		statusGui.Add("Text", "section xm w115", "Best checkpoint BCER")
-		bcer := statusGui.Add("Text", "ys w50", "-")
-		bcer.SetFont("bold")
-		generateBtn := statusGui.Add("Button", "ys w240", "&Generate model from currently best checkpoint")
-		generateBtn.OnEvent("Click", GenerateTraineddata)
-		generateBtn.Enabled := false
-		MonitorCheckpoints(true)
-
-		shutdownChb := statusGui.Add("Checkbox", "xs hp 0x20 Checked" SHUTDOWN_AFTER_TRAINING_COMPLETION, "Shutdown computer after successfully completed (automatically updates TessData)")
-		shutdownChb.OnEvent("Click", (ctrlObj,*)=>SHUTDOWN_AFTER_TRAINING_COMPLETION:=ctrlObj.Value)
+		if (windowTitle == "Training progress") {
+			statusGui.Add("Text", "section xm w115", "Best checkpoint BCER")
+			bcer := statusGui.Add("Text", "ys w50", "-")
+			bcer.SetFont("bold")
+			generateBtn := statusGui.Add("Button", "ys w240", "&Generate model from currently best checkpoint")
+			generateBtn.OnEvent("Click", GenerateTraineddata)
+			generateBtn.Enabled := false
+			MonitorCheckpoints(true)
+			shutdownChb := statusGui.Add("Checkbox", "xs hp 0x20 Checked" SHUTDOWN_AFTER_TRAINING_COMPLETION, "Shutdown computer after successfully completed (automatically updates TessData)")
+			shutdownChb.OnEvent("Click", (ctrlObj,*)=>SHUTDOWN_AFTER_TRAINING_COMPLETION:=ctrlObj.Value)
+		}
 	}
 
 	if (lastStatus) {
@@ -361,12 +362,13 @@ VerifyPythonDependencies() {
 
 	ProgressStatusGui("Verifying/installing required Python modules")
 
+	installCommand := PYTHON_EXE " -m pip install -r `"" TESSTRAIN_DIR "\requirements.txt`""
 	try {
-		ExecuteCommand(PYTHON_EXE " -m pip install Pillow>=6.2.1 python-bidi>=0.4 matplotlib pandas")
+		ExecuteCommand(installCommand)
 	} catch Error as e {
 		if (YesNoConfirmation("Could not install required Python modules. Probably you don't have required privilages.`n"
 			. "Do you want me to try again as Administrator?")) {
-			ExecuteCommand(PYTHON_EXE " -m pip install Pillow>=6.2.1 python-bidi>=0.4 matplotlib pandas",, true)
+			ExecuteCommand(installCommand,, true)
 			ExecuteCommand()
 		} else {
 			ErrorBox("Error installing required Python modules.`n" e.Message)

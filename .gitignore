@@ -20,3 +20,5 @@ plot/ocrd*
 tesstrain_gui.ini
 gui
 src
+ocrd-testset/*.box
+ocrd-testset/*.lstmf
