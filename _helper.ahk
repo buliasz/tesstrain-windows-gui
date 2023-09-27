@@ -362,7 +362,7 @@ VerifyPythonDependencies() {
 
 	ProgressStatusGui("Verifying/installing required Python modules")
 
-	installCommand := PYTHON_EXE " -m pip install -r `"" TESSTRAIN_DIR "\requirements.txt`""
+	installCommand := PYTHON_EXE " -m pip install --no-input --disable-pip-version-check -r `"" TESSTRAIN_DIR "\requirements.txt`""
 	try {
 		ExecuteCommand(installCommand)
 	} catch Error as e {
