@@ -18,7 +18,7 @@
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
-VERSION_NUMBER := "6.4"
+VERSION_NUMBER := "6.5"
 PROGRAM_TITLE := "Tesstrain GUI"
 DEBUG_MODE := false
 
@@ -69,6 +69,7 @@ TesstrainGui() {
 	if (!REQUIREMENTS_VERIFIED) {
 		VerifyRequirements()
 		global REQUIREMENTS_VERIFIED := true
+		IniWrite(true, CONFIGURATION_FILE, "General", "REQUIREMENTS_VERIFIED")
 	}
 
 	CreateGui()
@@ -352,6 +353,8 @@ TesstrainGui() {
 		exitBtn.OnEvent("Click", ExitGui)
 		resetBtn := mainGui.Add("Button", "ys x+10", "&Reload")
 		resetBtn.OnEvent("Click", (*)=>reload())
+		saveBtn := mainGui.Add("Button", "ys x+10", "Re-&check requirements")
+		saveBtn.OnEvent("Click", (*)=>VerifyRequirements())
 		saveBtn := mainGui.Add("Button", "ys x+10", "&Save settings")
 		saveBtn.OnEvent("Click", (*)=>SaveSettings(true))
 		autosaveChb := mainGui.Add("Checkbox", "ys hp 0x20 Checked" AUTO_SAVE " vAUTO_SAVE", "Save settings &automatically on 'Start Training'")

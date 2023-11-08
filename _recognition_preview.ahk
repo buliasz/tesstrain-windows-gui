@@ -14,7 +14,7 @@
 PreviewRecognition(btnCtrl, *) {
 	closeRequest := false
 	ocrInProgress := false
-	searchEnabled:=false
+	searchEnabled := false
 
 	col1Width := 120
 	col2Width := 680
@@ -177,6 +177,9 @@ PreviewRecognition(btnCtrl, *) {
 		}
 
 		imageList.RemoveAt(imageListPosition)
+		if (imageListPosition > imageList.Length) {
+			imageListPosition := imageList.Length
+		}
 		_RefreshGui()
 	}
 

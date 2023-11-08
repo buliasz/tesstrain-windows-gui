@@ -364,11 +364,11 @@ VerifyPythonDependencies() {
 
 	installCommand := PYTHON_EXE " -m pip install --no-input --disable-pip-version-check -r `"" TESSTRAIN_DIR "\requirements.txt`""
 	try {
-		ExecuteCommand(installCommand)
+		ExecuteCommand(installCommand, 3)
 	} catch Error as e {
 		if (YesNoConfirmation("Could not install required Python modules. Probably you don't have required privilages.`n"
 			. "Do you want me to try again as Administrator?")) {
-			ExecuteCommand(installCommand,, true)
+			ExecuteCommand(installCommand, 3, true)
 			ExecuteCommand()
 		} else {
 			ErrorBox("Error installing required Python modules.`n" e.Message)

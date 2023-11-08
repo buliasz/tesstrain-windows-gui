@@ -1,9 +1,4 @@
-data/*ground-truth/*
-data/langdata/*
-!data/ground-truth/.gitkeep
-data/all-*
-data/list.*
-data/unicharset
+data
 dta19-reduced
 dta19-reduced.tar.gz
 *.built
