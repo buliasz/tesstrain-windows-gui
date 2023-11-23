@@ -18,7 +18,7 @@
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
-VERSION_NUMBER := "6.5"
+VERSION_NUMBER := "7.0"
 PROGRAM_TITLE := "Tesstrain GUI"
 DEBUG_MODE := false
 
@@ -34,7 +34,7 @@ CONFIGURATION_VARIABLES_LIST := [
 	"DEBUG_INTERVAL", "LEARNING_RATE", "NET_SPEC", "LANG_TYPE", "NORM_MODE", "PASS_THROUGH_RECORDER", "LANG_IS_RTL", 
 	"GENERATE_BOX_SCRIPT", "PSM", "RANDOM_SEED", "RATIO_TRAIN", "TARGET_ERROR_RATE", "CREATE_BEST_TRAINEDDATA", 
 	"CREATE_FAST_TRAINEDDATA", "DELETE_BOX_FILES", "DELETE_LSTMF_FILES", "DELETE_MODEL_DIRECTORY", "AUTO_SAVE", 
-	"REQUIREMENTS_VERIFIED", "AUTO_CLEAN_OLD_DATA", "AUTO_UPDATE_TESSDATA", "BEEP_END_TRAINING"
+	"REQUIREMENTS_VERIFIED", "AUTO_CLEAN_OLD_DATA", "AUTO_UPDATE_TESSDATA", "BEEP_END_TRAINING", "PYTHON_EXE"
 ]
 
 CREATE_BEST_TRAINEDDATA := true
@@ -67,9 +67,12 @@ TesstrainGui() {
 
 	LoadSettings()
 	if (!REQUIREMENTS_VERIFIED) {
-		VerifyRequirements()
-		global REQUIREMENTS_VERIFIED := true
-		IniWrite(true, CONFIGURATION_FILE, "General", "REQUIREMENTS_VERIFIED")
+		if (VerifyRequirements()) {
+			global REQUIREMENTS_VERIFIED := true
+			IniWrite(true, CONFIGURATION_FILE, "General", "REQUIREMENTS_VERIFIED")
+		} else {
+			ExitApp()
+		}
 	}
 
 	CreateGui()
@@ -354,7 +357,7 @@ TesstrainGui() {
 		resetBtn := mainGui.Add("Button", "ys x+10", "&Reload")
 		resetBtn.OnEvent("Click", (*)=>reload())
 		saveBtn := mainGui.Add("Button", "ys x+10", "Re-&check requirements")
-		saveBtn.OnEvent("Click", (*)=>VerifyRequirements())
+		saveBtn.OnEvent("Click", (*)=>(VerifyRequirements() && MsgBox("Requirements verified successfully")))
 		saveBtn := mainGui.Add("Button", "ys x+10", "&Save settings")
 		saveBtn.OnEvent("Click", (*)=>SaveSettings(true))
 		autosaveChb := mainGui.Add("Checkbox", "ys hp 0x20 Checked" AUTO_SAVE " vAUTO_SAVE", "Save settings &automatically on 'Start Training'")

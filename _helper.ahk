@@ -329,35 +329,24 @@ GetBcerFromName(name) {
 VerifyRequirements() {
 	ProgressStatusGui("Starting up",, PROGRAM_TITLE)
 
-	VerifyPythonDependencies()
+	result := VerifyPythonDependencies()
 
 	ProgressStatusGui()
-	return true
+	return result
 }
 
 VerifyPythonDependencies() {
 	ProgressStatusGui("Verifying installed Python version")
-	try {
-		version := ExecuteCommand("python --version")
-		PYTHON_EXE := "python"
-	} catch Error as ePython {
-		try {
-			version := ExecuteCommand("python3 --version")
-			PYTHON_EXE := "python3"
-		} catch Error as ePython3 {
-			ErrorBox("Executing 'python' command returned error: " ePython.Message "`n`n"
-				. "Executing 'python3' command returned error: " ePython3.Message "`n`n"
-				. "Please make sure that you have a Python 3.x installed and that "
-				. "'python.exe' or 'python3.exe' executable file directory is in your PATH environment variable.")
-			ExitApp()
-		}
+	version := GetPythonVersion()
+	if (!version) {
+		return false
 	}
 
 	versionStr := StrRCutTo(Trim(version.StdOut, "`t`n`r "), " ")
 	versionArray := StrSplit(versionStr, ".")
 	if (versionArray.Length < 1 || !IsInteger(versionArray[1]) || versionArray[1] < 3) {
 		ErrorBox("Wrong Python version. Returned version: '" versionStr "'. Please install Python version 3 or above.")
-		ExitApp()
+		return false
 	}
 
 	ProgressStatusGui("Verifying/installing required Python modules")
@@ -372,9 +361,60 @@ VerifyPythonDependencies() {
 			ExecuteCommand()
 		} else {
 			ErrorBox("Error installing required Python modules.`n" e.Message)
-			ExitApp()
+			return false
 		}
 	}
+
+	return true
+}
+
+GetPythonVersion() {
+	global PYTHON_EXE
+
+	if (PYTHON_EXE != "python" && PYTHON_EXE != "python3") {
+		try {
+			version := ExecuteCommand(PYTHON_EXE " --version")
+			return version
+		}
+	}
+
+	try {
+		PYTHON_EXE := "python"
+		version := ExecuteCommand(PYTHON_EXE " --version")
+	} catch Error as ePython {
+		try {
+			PYTHON_EXE := "python3"
+			version := ExecuteCommand(PYTHON_EXE " --version")
+		} catch Error as ePython3 {
+			if (!YesNoConfirmation("Executing 'python' command returned error which means Python executable is not in the PATH environment variable. Do you want to select Pyton executable manually?"
+				. "`n`n Error messages: For 'python' command execution: " ePython.Message
+				. "`n`n For 'python3' command execution: " ePython3.Message
+			)) {
+				MsgBox("Please make sure that you have a Python 3.x installed and that "
+					. "'python.exe' or 'python3.exe' executable file directory is in your PATH environment variable."
+					. "`nAlternatively you can choose executable file in previous prompt without adding it to the PATH."
+				)
+				return ""
+			}
+
+			loop {
+				PYTHON_EXE := FileSelect(3, , "Please select Python executable file", "python*.exe")
+				if (!PYTHON_EXE) {
+					return ""
+				}
+
+				try {
+					version := ExecuteCommand(PYTHON_EXE " --version")
+					break
+				} catch Error as ePythonExe {
+					MsgBox("The selected executable file returned an error. Please try selecting another one."
+							. "`n`n Error message: " ePythonExe.Message)
+				}
+			}
+		}
+	}
+
+	return version
 }
 
 AotBox(message) {

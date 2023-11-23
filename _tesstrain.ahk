@@ -157,6 +157,7 @@ MultipleCheckpointToTraineddata(checkpointFileList, isFast) {
 		outputTraineddataFile := targetDir "\" StrCutEnd(FileGetName(checkpointFile), StrLen("checkpoint")) "traineddata"
 		Checkpoint2Traineddata(checkpointFile, outputTrainedDataFile, isFast)
 	}
+	return outputTrainedDataFile
 }
 
 Checkpoint2Traineddata(inputCheckpointFile, outputTrainedDataFile, isConvertToInt) {

@@ -51,7 +51,7 @@ StartTrainingCb(buttonCtrl, *) {
 	} catch Error as e {
 		StatusUpdate()	; closes status and re-enables main Gui
 		ErrorBox(
-			e.Message 
+			e.Message
 			. "`n`nIf checkpoint files were created during the process you can use the 'Generate' button to generate '.traineddata' files."
 			. ((DEBUG_MODE && e.HasProp("Extra")) ? "`n`n" e.Extra : "")
 		)
@@ -75,9 +75,11 @@ StartTrainingCb(buttonCtrl, *) {
 }
 
 ; Returns false if there is no model to use.
-UpdateModelFileInTessdata() {
+UpdateModelFileInTessdata(generatedModelFile:="") {
+	if (!generatedModelFile) {
+		generatedModelFile := DATA_DIR "\" MODEL_NAME ".traineddata"
+	}
 	tessdataModelFile := TESSDATA "\" MODEL_NAME ".traineddata"
-	generatedModelFile := DATA_DIR "\" MODEL_NAME ".traineddata"
 	shouldCopy := false
 	if (!FileExist(generatedModelFile)) {
 		ErrorBox("There is no newly generated model of name '" MODEL_NAME "' inside the " DATA_DIR " folder. Probably training didn't finish.")
@@ -96,8 +98,10 @@ UpdateModelFileInTessdata() {
 		try {
 			FileCopy(generatedModelFile, tessdataModelFile, true)
 		} catch Error as e {
-			if (YesNoConfirmation("Could not copy model file to '" tessdataModelFile "'. Probably Administrator privileges are required for the target folder.`n"
-				. "Do you want me to try again as an Administrator?")) {
+			if (YesNoConfirmation("Could not copy model file to '" tessdataModelFile "'. "
+				. "Probably Administrator privileges are required for the target folder.`n"
+				. "Do you want me to try again as an Administrator?")
+			) {
 				ExecuteCommand("copy /y `"" generatedModelFile "`" `"" tessdataModelFile "`"", 3, true)
 				ExecuteCommand()
 			} else {
@@ -115,7 +119,7 @@ SaveSettings(showMessage) {
 	for varableName in CONFIGURATION_VARIABLES_LIST {
 		IniWrite(%varableName%, CONFIGURATION_FILE, "General", varableName)
 	}
-	
+
 	if (showMessage) {
 		MsgBox("Settings saved", PROGRAM_TITLE)
 	}
@@ -188,13 +192,20 @@ GenerateTrainedData(*) {
 	if (checkpointFileList.Length == 0) {
 		return
 	}
-	if (CREATE_BEST_TRAINEDDATA) {
-		MultipleCheckpointToTraineddata(checkpointFileList, false)
-	}
 	if (CREATE_FAST_TRAINEDDATA) {
 		MultipleCheckpointToTraineddata(checkpointFileList, true)
 	}
-	MsgBox("'.traineddata' file" (checkpointFileList.Length > 1 ? "s" : "") " generated", PROGRAM_TITLE)
+
+	if (CREATE_BEST_TRAINEDDATA) {
+		lastCreated := MultipleCheckpointToTraineddata(checkpointFileList, false)
+		MsgBox("'.traineddata' model file" (checkpointFileList.Length > 1 ? "s" : "") " generated", PROGRAM_TITLE)
+		if (checkpointFileList.Length == 1
+			&& YesNoConfirmation("Do you want to update your Tessdata folder with the new best model file?")
+			&& UpdateModelFileInTessdata(lastCreated)
+		) {
+			MsgBox("New model successfully updated in your Tessdata", PROGRAM_TITLE)
+		}
+	}
 }
 
 ExitGui(*) {
