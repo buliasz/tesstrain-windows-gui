@@ -12,6 +12,17 @@
 #include _console.ahk
 #include _quick_sort.ahk
 
+Gui.Prototype.Has := GuiHas
+
+GuiHas(myGui, ctrlName) {
+	for aCtrl in myGui {
+		if (aCtrl.Name == ctrlName) {
+			return true
+		}
+	}
+	return false
+}
+
 SetGlobal(varName, varValue) {
 	global
 	%varName% := varValue

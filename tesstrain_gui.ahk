@@ -18,7 +18,7 @@
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
-VERSION_NUMBER := "7.0"
+VERSION_NUMBER := "7.1"
 PROGRAM_TITLE := "Tesstrain GUI"
 DEBUG_MODE := false
 
@@ -29,8 +29,8 @@ if (!A_IsCompiled) {
 CONFIGURATION_FILE := A_ScriptDir "\tesstrain_gui.ini"
 
 CONFIGURATION_VARIABLES_LIST := [
-	"TESSTRAIN_DIR", "BIN_DIR", "DATA_DIR", "TESSDATA", "GROUND_TRUTH_DIR", "DEBUG_MODE", "MODEL_NAME", "OUTPUT_DIR", 
-	"WORDLIST_FILE", "NUMBERS_FILE", "PUNC_FILE", "START_MODEL", "LAST_CHECKPOINT", "PROTO_MODEL", "MAX_ITERATIONS", 
+	"TESSTRAIN_DIR", "BIN_DIR", "DATA_DIR", "TESSDATA", "GROUND_TRUTH_DIR", "DEBUG_MODE", "MODEL_NAME", 
+	"WORDLIST_FILE", "NUMBERS_FILE", "PUNC_FILE", "START_MODEL", "MAX_ITERATIONS", 
 	"DEBUG_INTERVAL", "LEARNING_RATE", "NET_SPEC", "LANG_TYPE", "NORM_MODE", "PASS_THROUGH_RECORDER", "LANG_IS_RTL", 
 	"GENERATE_BOX_SCRIPT", "PSM", "RANDOM_SEED", "RATIO_TRAIN", "TARGET_ERROR_RATE", "CREATE_BEST_TRAINEDDATA", 
 	"CREATE_FAST_TRAINEDDATA", "DELETE_BOX_FILES", "DELETE_LSTMF_FILES", "DELETE_MODEL_DIRECTORY", "AUTO_SAVE", 
@@ -269,14 +269,20 @@ TesstrainGui() {
 		AddFileSelection(
 			"Last checkpoint file",
 			"LAST_CHECKPOINT",
-			"During the training Tesseract creates checkpoint files. If the file already exists it will be used to generate .traineddata from it. Checkpoint files are saved within 'checkpoints' subfolder of the selected 'Training files output directory'.`n`n"
-				. "You can use 'Generate' button to generate .traineddata from any existing .checkpoint file.",,
+			"During the training Tesseract creates checkpoint files. If the file already exists it will be used to generate "
+				. ".traineddata from it. Checkpoint files are saved within 'checkpoints' subfolder of the selected 'Training "
+				. "files output directory'.`n`n"
+				. "You can use 'Generate' button to generate .traineddata from any existing .checkpoint file.",
+			,
+			false
 		)
 		AddFileSelection(
 			"Proto model file",
 			"PROTO_MODEL",
 			"Name of the proto model. It's an automatically generated file for starter traineddata with combined Dawgs/Unicharset/Recoder for language model. Usually it is '<YOUR MODEL NAME>.traineddata' file within 'Training files output directory'.`n`n"
-				. "Note that if you want to fine tune some existing model (for example English 'eng' model) you should use the 'Start model' option for that purpose.",,
+				. "Note that if you want to fine tune some existing model (for example English 'eng' model) you should use the 'Start model' option for that purpose.",
+			,
+			false
 		)
 
 		AddFileSelection(
@@ -382,6 +388,9 @@ TesstrainGui() {
 			binSelectBtn.OnEvent("Click", FolderSelectCb)
 		}
 		AddDescription(description, title)
+		if (OnChange) {
+			OnChange(%targetVariableName%)
+		}
 
 		FolderSelectCb(*) {
 			folder := DirSelect("*" %targetVariableName%,, "Please choose: " title)
@@ -489,15 +498,15 @@ TesstrainGui() {
 		}
 	}
 
-	AddDefaultButton(varableName, defaultValue) {
+	AddDefaultButton(variableName, defaultValue) {
 		if (!defaultValue) {
 			return
 		}
 		defaultBtn := mainGui.Add("Button", "ys hp", "Default")
 		defaultBtn.OnEvent("Click", SetDefaultValue)
 		SetDefaultValue(btnCtrl, *) {
-			SetGlobal(varableName, defaultValue)
-			btnCtrl.Gui[varableName].Value := defaultValue
+			SetGlobal(variableName, defaultValue)
+			btnCtrl.Gui[variableName].Value := defaultValue
 		}
 	}
 
@@ -505,12 +514,10 @@ TesstrainGui() {
 		globalName := ctrlObj.Name
 		newValue := ctrlObj.Value
 		if (VALUE_VALIDATORS.Has(globalName) && !VALUE_VALIDATORS[globalName](newValue)) {
-			mainGui[globalName].SetFont("cRed bold")
-			WRONG_INPUT_MAP[globalName] := "Wrong value for '" globalName "'"
+			UpdateColorAndErrors(globalName, false, "Wrong value for '" globalName "'")
 			return
 		}
-		mainGui[globalName].SetFont("cDefault norm")
-		MapSafeDelete(WRONG_INPUT_MAP, globalName)
+		UpdateColorAndErrors(globalName, true)
 		SetGlobal(globalName, newValue)
 	}
 
@@ -520,7 +527,9 @@ TesstrainGui() {
 
 	; Updates value of a control and global variable to the provided one
 	UpdateValue(globalName, newValue) {
-		mainGui[globalName].Value := newValue
+		if (mainGui.Has(globalName)) {
+			mainGui[globalName].Value := newValue
+		}
 		SetGlobal(globalName, newValue)
 	}
 
@@ -565,9 +574,14 @@ TesstrainGui() {
 	}
 
 	UpdateAutoFolders(*) {
-		UpdateValue("OUTPUT_DIR", DATA_DIR "\" MODEL_NAME)
-		UpdateValue("LAST_CHECKPOINT", OUTPUT_DIR "\checkpoints\" MODEL_NAME "_checkpoint")
-		UpdateValue("PROTO_MODEL", OUTPUT_DIR "\" MODEL_NAME ".traineddata")
+		if (DirExist(DATA_DIR)) {
+			UpdateValue("OUTPUT_DIR", DATA_DIR "\" MODEL_NAME)
+			UpdateValue("LAST_CHECKPOINT", OUTPUT_DIR "\checkpoints\" MODEL_NAME "_checkpoint")
+			UpdateValue("PROTO_MODEL", OUTPUT_DIR "\" MODEL_NAME ".traineddata")
+			UpdateColorAndErrors("DATA_DIR", true)
+		} else {
+			UpdateColorAndErrors("DATA_DIR", false, "Selected output Data folder doesn't exist")
+		}
 	}
 
 	OnTesstrainDirChange(newBinDir, showPrompts:=true) {
@@ -589,14 +603,7 @@ TesstrainGui() {
 			}
 		}
 
-		if (errored) {
-			mainGui["TESSTRAIN_DIR"].SetFont("cRed bold")
-			WRONG_INPUT_MAP["TESSTRAIN_DIR"] := "Wrong 'TessTrain' scripts folder"
-		}
-		else {
-			mainGui["TESSTRAIN_DIR"].SetFont("cDefault norm")
-			MapSafeDelete(WRONG_INPUT_MAP, "TESSTRAIN_DIR")
-		}
+		UpdateColorAndErrors("TESSTRAIN_DIR", !errored, "Wrong 'TessTrain' scripts folder")
 	}
 
 	OnBinDirChange(newBinDir, showPrompts:=true) {
@@ -629,14 +636,8 @@ TesstrainGui() {
 			}
 		}
 
-		if (errored) {
-			mainGui["BIN_DIR"].SetFont("cRed bold")
-			WRONG_INPUT_MAP["BIN_DIR"] := "Wrong 'Tesseract executables folder'"
-		}
-		else {
-			mainGui["BIN_DIR"].SetFont("cDefault norm")
-			MapSafeDelete(WRONG_INPUT_MAP, "BIN_DIR")
-
+		UpdateColorAndErrors("BIN_DIR", !errored, "Wrong 'Tesseract executables folder'")
+		if (!errored) {
 			newTessdataDir := newBinDir "\tessdata"
 			if (showPrompts && TESSDATA != newTessdataDir && DirExist(newTessdataDir)) {
 				if (YesNoConfirmation("Found 'tessdata' subfolder inside selected executables folder. Do you want to set it as 'TessData folder'?")) {
@@ -654,13 +655,10 @@ TesstrainGui() {
 			if (showPrompts) {
 				ErrorBox("The selected folder doesn't contain any .traineddata files. Please select another one.")
 			}
-			mainGui["TESSDATA"].SetFont("cRed bold")
-			WRONG_INPUT_MAP["TESSDATA"] := "Wrong 'TessData folder'"
+			UpdateColorAndErrors("TESSDATA", false, "Wrong 'TessData folder'")
 		}
 		else {
-			mainGui["TESSDATA"].SetFont("cDefault norm")
-			MapSafeDelete(WRONG_INPUT_MAP, "TESSDATA")
-
+			UpdateColorAndErrors("TESSDATA", true)
 			UpdateStartModel()
 		}
 	}
@@ -670,8 +668,7 @@ TesstrainGui() {
 
 		for (imageExtension in SUPPORTED_IMAGE_FILES) {
 			if (FindAllFiles(newGroundTruthDir "\*" imageExtension).Length > 0) {
-				mainGui["GROUND_TRUTH_DIR"].SetFont("cDefault norm")
-				MapSafeDelete(WRONG_INPUT_MAP, "GROUND_TRUTH_DIR")
+				UpdateColorAndErrors("GROUND_TRUTH_DIR", true)
 				return
 			}
 		}
@@ -680,8 +677,7 @@ TesstrainGui() {
 				. "Please make sure to copy line image files that would be used for training before starting the training.`n"
 				. "Supported formats: " ArrayToString(SUPPORTED_IMAGE_FILES, ", "))
 		}
-		mainGui["GROUND_TRUTH_DIR"].SetFont("cRed bold")
-		WRONG_INPUT_MAP["GROUND_TRUTH_DIR"] := "No line image files in the 'Ground Truth folder'"
+		UpdateColorAndErrors("GROUND_TRUTH_DIR", false, "No line image files in the 'Ground Truth folder'")
 	}
 
 	OnStartModelChange(*) {
@@ -694,13 +690,25 @@ TesstrainGui() {
 		mainGui.Opt("+OwnDialogs")  ; Force the user to dismiss the dialog before interacting with the main window.
 
 		modelList := GetStartModelList()
-		mainGui["START_MODEL"].Delete()
-		mainGui["START_MODEL"].Add(modelList)
-		if (!ArrayContains(modelList, START_MODEL)) {
-			ErrorBox("Couldn't find the selected 'Start model' in your 'TessData folder'. Selecting no start model.")
-			START_MODEL := modelList[1]
+		if (mainGui.Has("START_MODEL")) {
+			mainGui["START_MODEL"].Delete()
+			mainGui["START_MODEL"].Add(modelList)
+			if (!ArrayContains(modelList, START_MODEL)) {
+				ErrorBox("Couldn't find the selected 'Start model' in your 'TessData folder'. Selecting no start model.")
+				START_MODEL := modelList[1]
+			}
+			mainGui["START_MODEL"].Choose(START_MODEL)
+			OnStartModelChange()
 		}
-		mainGui["START_MODEL"].Choose(START_MODEL)
-		OnStartModelChange()
+	}
+	
+	UpdateColorAndErrors(variableName, isValid, errorMessage:="") {
+		if (!isValid) {
+			mainGui[variableName].SetFont("cRed bold")
+			WRONG_INPUT_MAP[variableName] := errorMessage
+		} else {
+			mainGui[variableName].SetFont("cDefault norm")
+			MapSafeDelete(WRONG_INPUT_MAP, variableName)
+		}
 	}
 }
