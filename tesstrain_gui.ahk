@@ -18,7 +18,7 @@
 #SingleInstance Off
 FileEncoding "UTF-8-RAW"
 
-VERSION_NUMBER := "7.1"
+VERSION_NUMBER := "7.2"
 PROGRAM_TITLE := "Tesstrain GUI"
 DEBUG_MODE := false
 
