@@ -320,7 +320,7 @@ GenerateAllLstmfFiles() {
 
 	FileSave(OUTPUT_DIR "\all-lstmf", ArrayToString(lstmfFilesList, "`n") "`n")
 
-	ExecuteCommand(PYTHON_EXE " " TESSTRAIN_DIR "\shuffle.py " RANDOM_SEED " < `"" OUTPUT_DIR "\all-lstmf`" > `"" OUTPUT_DIR "\all-lstmf.shuffled`"", 2)
+	ExecuteCommand(PYTHON_EXE " `"" TESSTRAIN_DIR "\shuffle.py`" " RANDOM_SEED " < `"" OUTPUT_DIR "\all-lstmf`" > `"" OUTPUT_DIR "\all-lstmf.shuffled`"", 2)
 	lstmfList := GetNonEmptyLines(OUTPUT_DIR "\all-lstmf.shuffled")
 
 	return lstmfList
@@ -352,7 +352,7 @@ GenerateBoxFileFromImage(fullImagePathWithoutExtension, imageExtension) {
 		|| IsFileNewer(imageFileFullPath, boxFileFullPath)
 		|| IsFileNewer(gtTxtFileFullPath, boxFileFullPath)
 	) {
-		ExecuteCommand("set PYTHONIOENCODING=utf-8 && " PYTHON_EXE " " TESSTRAIN_DIR "\" GENERATE_BOX_SCRIPT " -i `"" imageFileFullPath "`" -t `"" gtTxtFileFullPath "`" > `"" boxFileFullPath "`"", 2)
+		ExecuteCommand("set PYTHONIOENCODING=utf-8 && " PYTHON_EXE " `"" TESSTRAIN_DIR "\" GENERATE_BOX_SCRIPT "`" -i `"" imageFileFullPath "`" -t `"" gtTxtFileFullPath "`" > `"" boxFileFullPath "`"", 2)
 	}
 }
 
